@@ -28,21 +28,21 @@ namespace StudentApp
             // If application is running in development mode, then use in memory database
             if (_currentEnvironment.IsDevelopment())
             {
-                services.AddDbContext<ApplicationDbContext>(options =>
+                services.AddDbContext<StudentDbContext>(options =>
                     options.UseInMemoryDatabase("StudentApp"));
             }
             else
             {
-                services.AddDbContext<ApplicationDbContext>(options =>
+                services.AddDbContext<StudentDbContext>(options =>
                     options.UseSqlServer(
                         Configuration.GetConnectionString("DefaultConnection")));
             }
 
             services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
-            .AddEntityFrameworkStores<ApplicationDbContext>();
+            .AddEntityFrameworkStores<StudentDbContext>();
 
             services.AddIdentityServer()
-                .AddApiAuthorization<ApplicationUser, ApplicationDbContext>();
+                .AddApiAuthorization<ApplicationUser, StudentDbContext>();
 
             services.AddAuthentication()
                 .AddIdentityServerJwt();
