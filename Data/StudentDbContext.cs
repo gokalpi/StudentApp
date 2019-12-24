@@ -20,5 +20,7 @@ namespace StudentApp.Data
 
             builder.Entity<Student>().OwnsOne(s => s.Address);
         }
+
+        public DbSet<StudentApp.Models.Student> Student { get; set; }
     }
 }
