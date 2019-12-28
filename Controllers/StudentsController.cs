@@ -26,7 +26,7 @@ namespace StudentApp.Controllers
         /// </summary>
         /// <returns>List of students</returns>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Student>>> GetStudent()
+        public async Task<ActionResult<IEnumerable<Student>>> GetAllStudents()
         {
             return await _context.Student.ToListAsync();
         }

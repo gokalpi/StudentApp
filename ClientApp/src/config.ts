@@ -1,0 +1,1 @@
+export const apiEndpoint = "https://localhost:44346/api"
