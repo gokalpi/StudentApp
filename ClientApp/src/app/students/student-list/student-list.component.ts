@@ -1,5 +1,4 @@
 import { Component, OnInit } from "@angular/core";
-import { Router } from "@angular/router";
 
 import { StudentService } from "../../services/student.service";
 import { Student } from "src/app/models/Student";
@@ -10,15 +9,11 @@ import { Student } from "src/app/models/Student";
   styleUrls: ["./student-list.component.css"]
 })
 export class StudentListComponent implements OnInit {
-  public students: Student[];
+  students: Student[];
 
-  constructor(private studentService: StudentService, private router: Router) {
-    console.log("StudentListComponent constructor");
-  }
+  constructor(private studentService: StudentService) {}
 
   async ngOnInit() {
-    console.log("ngOnInit method calling..");
-
     try {
       this.getAllStudents();
     } catch (e) {
@@ -27,14 +22,25 @@ export class StudentListComponent implements OnInit {
   }
 
   async getAllStudents() {
-    this.students = await this.studentService.getAllStudents();
+    try {
+      this.students = await this.studentService.getAllStudents();
+      console.log("Students", this.students);
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   public async deleteStudent(studentId: number) {
     const ans = confirm("Do you want to delete student with id: " + studentId);
     if (ans) {
-      await this.studentService.deleteStudent(studentId);
-      this.getAllStudents();
+      try {
+        await this.studentService.deleteStudent(studentId);
+        console.log(`Student with id ${studentId} is deleted`);
+        
+        this.getAllStudents();
+      } catch (error) {
+        console.error(error);
+      }
     }
   }
 }

@@ -1,1 +1,14 @@
-<p>student-details works!</p>
+<h2>Selected Student Details</h2>
+<h5>
+  This is the details for <b>{{ student.name }}</b>
+</h5>
+<div><b>Id: </b>{{ student.id }}</div>
+<div><b>Email Address: </b>{{ student.email }}</div>
+<div><b>Phone: </b>{{ student.phone }}</div>
+<div><b>Gender: </b>{{ student.gender }}</div>
+<div><b>Blood group: </b>{{ student.bloodGroup }}</div>
+<div><b>Street: </b>{{ student.address.street }}</div>
+<div><b>City: </b>{{ student.address.city }}</div>
+<div><b>State: </b>{{ student.address.state }}</div>
+<div><b>Country: </b>{{ student.address.country }}</div>
+<div><a (click)="gotoStudentList()">Back</a></div>

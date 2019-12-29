@@ -10,16 +10,24 @@
     <tr>
       <th>Id</th>
       <th>Name</th>
+      <th>Gender</th>
+      <th>Blood Group</th>
+      <th>Phone</th>
+      <th>Email</th>
       <th>Action</th>
     </tr>
   </thead>
   <tbody>
     <tr *ngFor="let student of students">
-      <td>{{student.Id}}</td>
-      <td><a [routerLink]="['/students/', student.Id]">{{ student.Name }}</a></td>
+      <td>{{student.id}}</td>
+      <td><a [routerLink]="['/students/', student.id]">{{ student.name }}</a></td>
+      <td>{{ student.gender }}</td>
+      <td>{{ student.bloodGroup }}</td>
+      <td>{{ student.phone }}</td>
+      <td>{{ student.email }}</td>
       <td>
-        <a [routerLink]="['/students/edit/', student.Id]" class="btn btn-primary btn-sm float-right">Edit</a>
-        <a [routerLink]="" (click)="deleteStudent(student.Id)" class="btn btn-danger btn-sm float-right">Delete</a>
+        <a [routerLink]="['/students/edit/', student.id]" class="btn btn-primary btn-sm float-right">Edit</a>
+        <a [routerLink]="" (click)="deleteStudent(student.id)" class="btn btn-danger btn-sm float-right">Delete</a>
       </td>
     </tr>
   </tbody>

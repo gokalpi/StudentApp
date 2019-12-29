@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using StudentApp.Data;
 using StudentApp.Models;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace StudentApp.Controllers
@@ -14,11 +13,11 @@ namespace StudentApp.Controllers
     [ApiController]
     public class StudentsController : ControllerBase
     {
-        private readonly StudentDbContext _context;
+        private readonly IRepository<Student> _repository;
 
-        public StudentsController(StudentDbContext context)
+        public StudentsController(IRepository<Student> repository)
         {
-            _context = context;
+            _repository = repository;
         }
 
         /// <summary>
@@ -28,7 +27,7 @@ namespace StudentApp.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Student>>> GetAllStudents()
         {
-            return await _context.Student.ToListAsync();
+            return Ok(await _repository.GetAllAsync());
         }
 
         /// <summary>
@@ -43,7 +42,7 @@ namespace StudentApp.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<Student>> GetStudent(int id)
         {
-            var student = await _context.Student.FindAsync(id);
+            var student = await _repository.GetByIdAsync(id);
 
             if (student == null)
             {
@@ -93,15 +92,14 @@ namespace StudentApp.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(student).State = EntityState.Modified;
-
             try
             {
-                await _context.SaveChangesAsync();
+                _repository.Update(student);
+                var updatedStudent = await _repository.SaveAsync(student);
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!StudentExists(id))
+                if (!_repository.Exists(id))
                 {
                     return NotFound();
                 }
@@ -146,10 +144,10 @@ namespace StudentApp.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<Student>> AddStudent(Student student)
         {
-            _context.Student.Add(student);
-            await _context.SaveChangesAsync();
+            _repository.Add(student);
+            var addedStudent = await _repository.SaveAsync(student);
 
-            return CreatedAtAction("GetStudent", new { id = student.Id }, student);
+            return CreatedAtAction("GetStudent", new { id = addedStudent.Id }, addedStudent);
         }
 
         /// <summary>
@@ -166,21 +164,16 @@ namespace StudentApp.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<Student>> DeleteStudent(int id)
         {
-            var student = await _context.Student.FindAsync(id);
+            var student = await _repository.GetByIdAsync(id);
             if (student == null)
             {
                 return NotFound();
             }
 
-            _context.Student.Remove(student);
-            await _context.SaveChangesAsync();
+            _repository.Delete(student);
+            var deletedStudent = await _repository.SaveAsync(student);
 
-            return student;
-        }
-
-        private bool StudentExists(int id)
-        {
-            return _context.Student.Any(e => e.Id == id);
+            return deletedStudent;
         }
     }
 }

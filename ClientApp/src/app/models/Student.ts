@@ -1,7 +1,7 @@
 import { Address } from "./Address";
 
 export interface Student {
-  Id: number;
+  Id?: number;
   Name: string;
   Email?: string;
   Phone?: string;
