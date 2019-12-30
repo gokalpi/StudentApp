@@ -1,13 +1,14 @@
 ﻿using AutoWrapper.Extensions;
 using AutoWrapper.Wrappers;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using StudentApp.Data;
 using StudentApp.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using static Microsoft.AspNetCore.Http.StatusCodes;
 
-namespace StudentApp.Controllers
+namespace StudentApp.V1.Controllers
 {
     [Produces("application/json")]
     [ApiController]
@@ -16,10 +17,12 @@ namespace StudentApp.Controllers
     public class StudentsController : ControllerBase
     {
         private readonly IRepository<Student> _repository;
+        private readonly ILogger<StudentsController> _logger;
 
-        public StudentsController(IRepository<Student> repository)
+        public StudentsController(IRepository<Student> repository, ILogger<StudentsController> logger)
         {
             _repository = repository;
+            _logger = logger;
         }
 
         /// <summary>
@@ -31,6 +34,8 @@ namespace StudentApp.Controllers
         [ProducesResponseType(typeof(IEnumerable<Student>), Status200OK)]
         public async Task<IEnumerable<Student>> GetAllStudents()
         {
+            _logger.LogInformation("Getting all students");
+
             return await _repository.GetAllAsync();
         }
 
@@ -46,10 +51,13 @@ namespace StudentApp.Controllers
         [ProducesResponseType(Status404NotFound)]
         public async Task<ActionResult<Student>> GetStudent(int id)
         {
+            _logger.LogInformation($"Getting student with id {id}");
+
             var student = await _repository.GetByIdAsync(id);
 
             if (student == null)
             {
+                _logger.LogError($"Student with id {id} does not exist");
                 throw new ApiException($"Student with id: {id} does not exist.", Status404NotFound);
             }
 
@@ -90,21 +98,28 @@ namespace StudentApp.Controllers
         [ProducesResponseType(Status500InternalServerError)]
         public async Task<ApiResponse> CreateStudent(Student student)
         {
+            _logger.LogInformation($"Creating student {student}");
+
             if (ModelState.IsValid)
             {
                 try
                 {
                     var newStudent = await _repository.CreateAsync(student);
 
+                    _logger.LogInformation("Student successfully created.");
                     return new ApiResponse("Student successfully created.", newStudent, Status201Created);
                 }
                 catch (System.Exception e)
                 {
+                    _logger.LogError(e, "Error in creating student");
                     throw new ApiException(e);
                 }
             }
             else
+            {
+                _logger.LogError("Model is not valid");
                 throw new ApiException(ModelState.AllErrors());
+            }
         }
 
         /// <summary>
@@ -144,6 +159,8 @@ namespace StudentApp.Controllers
         [ProducesResponseType(Status500InternalServerError)]
         public async Task<ApiResponse> UpdateStudent(int id, Student student)
         {
+            _logger.LogInformation($"Updating student {student}");
+
             if (id != student.Id)
             {
                 throw new ApiException($"Id {id} with entity id: {student.Id} does not match.", Status400BadRequest);
@@ -151,6 +168,7 @@ namespace StudentApp.Controllers
 
             if (!await _repository.ExistsAsync(id))
             {
+                _logger.LogError($"Student with id {id} does not exist");
                 throw new ApiException($"Student with Id: {id} does not exist.", Status404NotFound);
             }
 
@@ -160,15 +178,20 @@ namespace StudentApp.Controllers
                 {
                     await _repository.UpdateAsync(student);
 
+                    _logger.LogInformation($"Student with Id: {student.Id} successfully updated.");
                     return new ApiResponse($"Student with Id: {student.Id} successfully updated.", true);
                 }
                 catch (System.Exception e)
                 {
+                    _logger.LogError(e, $"Error in deleting student with id {id}");
                     throw new ApiException(e);
                 }
             }
             else
+            {
+                _logger.LogError("Model is not valid");
                 throw new ApiException(ModelState.AllErrors());
+            }
         }
 
         /// <summary>
@@ -185,9 +208,12 @@ namespace StudentApp.Controllers
         [ProducesResponseType(Status500InternalServerError)]
         public async Task<ApiResponse> DeleteStudent(int id)
         {
+            _logger.LogInformation($"Deleting student with id {id}");
+
             var student = await _repository.GetByIdAsync(id);
             if (student == null)
             {
+                _logger.LogError($"Student with id {id} does not exist");
                 throw new ApiException($"Student with Id: {id} does not exist.", Status404NotFound);
             }
 
@@ -195,10 +221,12 @@ namespace StudentApp.Controllers
             {
                 await _repository.DeleteAsync(student);
 
+                _logger.LogInformation($"Student with id {id} successfully deleted");
                 return new ApiResponse($"Student with Id: {id} successfully deleted.", true);
             }
             catch (System.Exception e)
             {
+                _logger.LogError(e, $"Error in deleting student with id {id}");
                 throw new ApiException(e);
             }
         }
