@@ -10,8 +10,9 @@ using static Microsoft.AspNetCore.Http.StatusCodes;
 namespace StudentApp.Controllers
 {
     [Produces("application/json")]
-    [Route("api/[controller]")]
     [ApiController]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     public class StudentsController : ControllerBase
     {
         private readonly IRepository<Student> _repository;
@@ -24,8 +25,10 @@ namespace StudentApp.Controllers
         /// <summary>
         /// Gets a list of all students
         /// </summary>
-        /// <returns>List of students</returns>
+        /// <returns>List of all students</returns>
+        /// <response code="200">The successfully retrieved students.</response>
         [HttpGet]
+        [ProducesResponseType(typeof(IEnumerable<Student>), Status200OK)]
         public async Task<IEnumerable<Student>> GetAllStudents()
         {
             return await _repository.GetAllAsync();
@@ -36,8 +39,10 @@ namespace StudentApp.Controllers
         /// </summary>
         /// <param name="id">Student id</param>
         /// <returns>Student details</returns>
-        /// <response code="404">If the student is not found</response>
-        [HttpGet("{id}")]
+        /// <response code="200">The student was successfully retrieved.</response>
+        /// <response code="404">The student does not exits</response>
+        [HttpGet("{id:int}")]
+        [ProducesResponseType(typeof(Student), Status200OK)]
         [ProducesResponseType(Status404NotFound)]
         public async Task<ActionResult<Student>> GetStudent(int id)
         {
@@ -80,7 +85,7 @@ namespace StudentApp.Controllers
         /// <response code="400">If model state is not valid</response>
         /// <response code="500">If exception occurs during delete</response>
         [HttpPost]
-        [ProducesResponseType(Status201Created)]
+        [ProducesResponseType(typeof(ApiResponse), Status201Created)]
         [ProducesResponseType(Status400BadRequest)]
         [ProducesResponseType(Status500InternalServerError)]
         public async Task<ApiResponse> CreateStudent(Student student)
@@ -130,10 +135,10 @@ namespace StudentApp.Controllers
         /// <returns>Api response</returns>
         /// <response code="200">Returns true if successfully updated</response>
         /// <response code="400">If model state is not valid</response>
-        /// <response code="404">If the student is not found</response>
+        /// <response code="404">The student does not exits</response>
         /// <response code="500">If exception occurs during delete</response>
-        [HttpPut("{id}")]
-        [ProducesResponseType(Status200OK)]
+        [HttpPut("{id:int}")]
+        [ProducesResponseType(typeof(ApiResponse), Status200OK)]
         [ProducesResponseType(Status400BadRequest)]
         [ProducesResponseType(Status404NotFound)]
         [ProducesResponseType(Status500InternalServerError)]
@@ -172,10 +177,10 @@ namespace StudentApp.Controllers
         /// <param name="id">Student id</param>
         /// <returns>Api response</returns>
         /// <response code="200">Returns true if successfully deleted</response>
-        /// <response code="404">If the student is not found</response>
+        /// <response code="404">The student does not exits</response>
         /// <response code="500">If exception occurs during delete</response>
-        [HttpDelete("{id}")]
-        [ProducesResponseType(Status200OK)]
+        [HttpDelete("{id:int}")]
+        [ProducesResponseType(typeof(ApiResponse), Status200OK)]
         [ProducesResponseType(Status404NotFound)]
         [ProducesResponseType(Status500InternalServerError)]
         public async Task<ApiResponse> DeleteStudent(int id)
