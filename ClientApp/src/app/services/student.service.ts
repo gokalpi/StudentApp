@@ -11,7 +11,7 @@ export class StudentService {
   async getAllStudents(): Promise<Student[]> {
     console.log("Getting all students");
 
-    const response = await Axios.get(`${apiEndpoint}/students`, {
+    const response = await Axios.get(`${apiEndpoint}/v1/students`, {
       headers: {
         "Content-Type": "application/json"
       }
@@ -24,7 +24,7 @@ export class StudentService {
   async getStudent(studentId: number): Promise<Student> {
     console.log(`Getting student ${studentId}`);
 
-    const response = await Axios.get(`${apiEndpoint}/students/${studentId}`, {
+    const response = await Axios.get(`${apiEndpoint}/v1/students/${studentId}`, {
       headers: {
         "Content-Type": "application/json"
       }
@@ -38,7 +38,7 @@ export class StudentService {
     console.log("Creating student");
 
     const response = await Axios.post(
-      `${apiEndpoint}/students`,
+      `${apiEndpoint}/v1/students`,
       JSON.stringify(newStudent),
       {
         headers: {
@@ -55,7 +55,7 @@ export class StudentService {
     console.log(`Updating student ${studentId}`);
 
     const response = await Axios.put(
-      `${apiEndpoint}/students/${studentId}`,
+      `${apiEndpoint}/v1/students/${studentId}`,
       JSON.stringify(updatedStudent),
       {
         headers: {
@@ -71,7 +71,7 @@ export class StudentService {
   async deleteStudent(studentId: number): Promise<void> {
     console.log(`Deleting student ${studentId}`);
 
-    const response = await Axios.delete(`${apiEndpoint}/students/${studentId}`, {
+    const response = await Axios.delete(`${apiEndpoint}/v1/students/${studentId}`, {
       headers: {
         "Content-Type": "application/json"
       }
