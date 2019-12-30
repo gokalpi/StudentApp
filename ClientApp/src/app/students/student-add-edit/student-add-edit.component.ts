@@ -78,7 +78,7 @@ export class StudentAddEditComponent implements OnInit {
     return this.studentForm.get("Email");
   }
   get phone() {
-    return this.studentForm.get("Name");
+    return this.studentForm.get("Phone");
   }
   get gender() {
     return this.studentForm.get("Gender");

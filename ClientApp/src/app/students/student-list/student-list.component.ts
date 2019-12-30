@@ -9,7 +9,7 @@ import { Student } from "src/app/models/Student";
   styleUrls: ["./student-list.component.css"]
 })
 export class StudentListComponent implements OnInit {
-  students: Student[];
+  students: any[];
 
   constructor(private studentService: StudentService) {}
 

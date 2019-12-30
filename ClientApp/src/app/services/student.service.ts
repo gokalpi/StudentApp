@@ -17,7 +17,7 @@ export class StudentService {
       }
     });
 
-    console.log("Students:", response.data);
+    // console.log("Students:", response.data);
     return response.data;
   }
 
@@ -30,7 +30,7 @@ export class StudentService {
       }
     });
 
-    console.log("Student:", response.data);
+    // console.log("Student:", response.data);
     return response.data;
   }
 
@@ -47,6 +47,7 @@ export class StudentService {
       }
     );
 
+    // console.log("Created student:", response.data);
     return response.data;
   }
 

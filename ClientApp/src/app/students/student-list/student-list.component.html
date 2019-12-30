@@ -1,34 +1,42 @@
-<h2>Students</h2>
+<div class="table-wrapper">
+  <div class="table-title">
+    <div class="row">
+      <div class="col-sm-8">
+        <h2>Students</h2>
+      </div>
+      <div class="col-sm-4">
+        <a [routerLink]="['/students/add']" class="btn btn-primary add-new"><i class="fas fa-plus"></i> Add New</a>
+      </div>
+    </div>
+  </div>
 
-<p *ngIf="!students"><em>Loading...</em></p>
-<p>
-  <a [routerLink]="['/students/add']" class="btn btn-primary float-right mb-3">New Student</a>
-</p>
+  <p *ngIf="!students"><em>Loading...</em></p>
 
-<table class="table table-sm table-hover" *ngIf="students?.length>0">
-  <thead>
-    <tr>
-      <th>Id</th>
-      <th>Name</th>
-      <th>Gender</th>
-      <th>Blood Group</th>
-      <th>Phone</th>
-      <th>Email</th>
-      <th>Action</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let student of students">
-      <td>{{student.id}}</td>
-      <td><a [routerLink]="['/students/', student.id]">{{ student.name }}</a></td>
-      <td>{{ student.gender }}</td>
-      <td>{{ student.bloodGroup }}</td>
-      <td>{{ student.phone }}</td>
-      <td>{{ student.email }}</td>
-      <td>
-        <a [routerLink]="['/students/edit/', student.id]" class="btn btn-primary btn-sm float-right">Edit</a>
-        <a [routerLink]="" (click)="deleteStudent(student.id)" class="btn btn-danger btn-sm float-right">Delete</a>
-      </td>
-    </tr>
-  </tbody>
-</table>
+  <table class="table table-sm table-hover" *ngIf="students?.length>0">
+    <thead>
+      <tr>
+        <th>Id</th>
+        <th>Name</th>
+        <th>Gender</th>
+        <th>Blood Group</th>
+        <th>Phone</th>
+        <th>Email</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let student of students">
+        <td>{{student.id}}</td>
+        <td><a [routerLink]="['/students/', student.id]">{{ student.name }}</a></td>
+        <td>{{ student.gender }}</td>
+        <td>{{ student.bloodGroup }}</td>
+        <td>{{ student.phone }}</td>
+        <td>{{ student.email }}</td>
+        <td>
+          <a [routerLink]="['/students/edit/', student.id]" class="edit"><i class="fas fa-edit"></i></a>
+          <a [routerLink]="" (click)="deleteStudent(student.id)" class="delete"><i class="fas fa-trash-alt"></i></a>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
