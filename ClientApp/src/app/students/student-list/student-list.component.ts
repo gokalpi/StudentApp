@@ -1,4 +1,5 @@
 import { Component, OnInit } from "@angular/core";
+import { ToastrService } from "ngx-toastr";
 
 import { StudentService } from "../../services/student.service";
 import { Student } from "src/app/models/Student";
@@ -11,7 +12,10 @@ import { Student } from "src/app/models/Student";
 export class StudentListComponent implements OnInit {
   students: any[];
 
-  constructor(private studentService: StudentService) {}
+  constructor(
+    private studentService: StudentService,
+    private toastr: ToastrService
+  ) {}
 
   async ngOnInit() {
     try {
@@ -36,9 +40,11 @@ export class StudentListComponent implements OnInit {
       try {
         await this.studentService.deleteStudent(studentId);
         console.log(`Student with id ${studentId} is deleted`);
-        
+        this.toastr.success(`Deleted student ${studentId}`, 'Success', { timeOut: 2000 });
+
         this.getAllStudents();
       } catch (error) {
+        this.toastr.error(`Error deleting student ${studentId}.\nError: ${error}`, 'Error', { timeOut: 2000 });
         console.error(error);
       }
     }

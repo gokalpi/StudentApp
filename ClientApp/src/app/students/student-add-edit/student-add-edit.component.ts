@@ -155,6 +155,8 @@ export class StudentAddEditComponent implements OnInit {
 
       this.router.navigate(["/students"]);
     } catch (error) {
+      this.toastr.error(`Error creating student ${error}`, 'Error', { timeOut: 2000 });
+
       console.error(error);
     }
   }
