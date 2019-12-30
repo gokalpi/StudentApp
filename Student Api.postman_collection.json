@@ -1,0 +1,229 @@
+{
+	"info": {
+		"_postman_id": "a3c757dd-8f11-4933-b8e0-818973487663",
+		"name": "Student Api",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Students",
+			"item": [
+				{
+					"name": "Get all students",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:44346/api/Students",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "44346",
+							"path": [
+								"api",
+								"Students"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get a student",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:44346/api/Students",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "44346",
+							"path": [
+								"api",
+								"Students"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create empty student",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:44346/api/Students",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "44346",
+							"path": [
+								"api",
+								"Students"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create invalid student",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"id\": 0,\r\n  \"name\": \"\",\r\n  \"email\": \"\",\r\n  \"phone\": \"\",\r\n  \"gender\": \"\",\r\n  \"bloodGroup\": \"\",\r\n  \"address\": {\r\n    \"street\": \"\",\r\n    \"city\": \"\",\r\n    \"state\": \"\",\r\n    \"country\": \"\"\r\n  }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:44346/api/Students",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "44346",
+							"path": [
+								"api",
+								"Students"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create student",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"id\": 0,\r\n  \"name\": \"Ibrahim Gokalp\",\r\n  \"email\": \"gokalpi@gmail.com\",\r\n  \"phone\": \"+90-532-2105983\",\r\n  \"gender\": \"Male\",\r\n  \"bloodGroup\": \"0+\",\r\n  \"address\": {\r\n    \"street\": \"Cumhuriyet Cad.\",\r\n    \"city\": \"Istanbul\",\r\n    \"state\": \"TR\",\r\n    \"country\": \"Turkey\"\r\n  }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:44346/api/Students",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "44346",
+							"path": [
+								"api",
+								"Students"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update student",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"id\": 1,\r\n  \"name\": \"Ibrahim Gokalp\",\r\n  \"email\": \"gokalpi@gmail.com\",\r\n  \"phone\": \"+90-532-2105983\",\r\n  \"gender\": \"Male\",\r\n  \"bloodGroup\": \"A+\",\r\n  \"address\": {\r\n    \"street\": \"Sehit Murat Demir Cad.\",\r\n    \"city\": \"Istanbul\",\r\n    \"state\": \"TR\",\r\n    \"country\": \"Turkey\"\r\n  }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:44346/api/Students/1",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "44346",
+							"path": [
+								"api",
+								"Students",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete student",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "https://localhost:44346/api/Students/1",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "44346",
+							"path": [
+								"api",
+								"Students",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		}
+	],
+	"protocolProfileBehavior": {}
+}
