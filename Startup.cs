@@ -1,3 +1,4 @@
+using AutoWrapper;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -31,7 +32,9 @@ namespace StudentApp
             if (_currentEnvironment.IsDevelopment())
             {
                 services.AddDbContext<StudentDbContext>(options =>
-                    options.UseInMemoryDatabase("StudentApp"));
+                    options
+                    .UseInMemoryDatabase("StudentApp")
+                    .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking));
             }
             else
             {
@@ -85,13 +88,16 @@ namespace StudentApp
                 c.IncludeXmlComments(xmlPath);
             });
 
+            ////Configure CORS to allow any origin, header and method.
             //services.AddCors(options =>
             //{
-            //    options.AddPolicy("CorsPolicy",
-            //        builder => builder.AllowAnyOrigin()
-            //            .AllowAnyMethod()
-            //            .AllowAnyHeader()
-            //            .AllowCredentials());
+            //    options.AddPolicy("AllowAll",
+            //    builder =>
+            //    {
+            //        builder.AllowAnyOrigin()
+            //               .AllowAnyHeader()
+            //               .AllowAnyMethod();
+            //    });
             //});
 
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
@@ -130,7 +136,13 @@ namespace StudentApp
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "Student API V1");
             });
 
+            //Enable AutoWrapper.Core
+            app.UseApiResponseAndExceptionWrapper(new AutoWrapperOptions { IsApiOnly = false });
+
             app.UseRouting();
+
+            ////Enable CORS
+            //app.UseCors("AllowAll");
 
             app.UseAuthentication();
             app.UseIdentityServer();

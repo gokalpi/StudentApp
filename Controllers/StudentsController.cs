@@ -1,10 +1,11 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using AutoWrapper.Extensions;
+using AutoWrapper.Wrappers;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using StudentApp.Data;
 using StudentApp.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using static Microsoft.AspNetCore.Http.StatusCodes;
 
 namespace StudentApp.Controllers
 {
@@ -25,9 +26,9 @@ namespace StudentApp.Controllers
         /// </summary>
         /// <returns>List of students</returns>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Student>>> GetAllStudents()
+        public async Task<IEnumerable<Student>> GetAllStudents()
         {
-            return Ok(await _repository.GetAllAsync());
+            return await _repository.GetAllAsync();
         }
 
         /// <summary>
@@ -35,21 +36,70 @@ namespace StudentApp.Controllers
         /// </summary>
         /// <param name="id">Student id</param>
         /// <returns>Student details</returns>
-        /// <response code="400">If the student id is not a valid number</response>
         /// <response code="404">If the student is not found</response>
         [HttpGet("{id}")]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(Status404NotFound)]
         public async Task<ActionResult<Student>> GetStudent(int id)
         {
             var student = await _repository.GetByIdAsync(id);
 
             if (student == null)
             {
-                return NotFound();
+                throw new ApiException($"Student with id: {id} does not exist.", Status404NotFound);
             }
 
             return student;
+        }
+
+        /// <summary>
+        /// Creates a new student
+        /// </summary>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     POST /api/Students
+        ///     {
+        ///       "id": 0,
+        ///       "name": "Ibrahim Gokalp",
+        ///       "email": "gokalpi@gmail.com",
+        ///       "phone": "+90-xxx-xxxxxxx",
+        ///       "gender": "Male",
+        ///       "bloodGroup": "XX",
+        ///       "address": {
+        ///         "street": "XXXX",
+        ///         "city": "Istanbul",
+        ///         "state": "TR",
+        ///         "country": "Turkey"
+        ///       }
+        ///     }
+        ///
+        /// </remarks>
+        /// <param name="student">Student details</param>
+        /// <returns>Api response</returns>
+        /// <response code="201">Returns the created student</response>
+        /// <response code="400">If model state is not valid</response>
+        /// <response code="500">If exception occurs during delete</response>
+        [HttpPost]
+        [ProducesResponseType(Status201Created)]
+        [ProducesResponseType(Status400BadRequest)]
+        [ProducesResponseType(Status500InternalServerError)]
+        public async Task<ApiResponse> CreateStudent(Student student)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var newStudent = await _repository.CreateAsync(student);
+
+                    return new ApiResponse("Student successfully created.", newStudent, Status201Created);
+                }
+                catch (System.Exception e)
+                {
+                    throw new ApiException(e);
+                }
+            }
+            else
+                throw new ApiException(ModelState.AllErrors());
         }
 
         /// <summary>
@@ -77,103 +127,75 @@ namespace StudentApp.Controllers
         /// </remarks>
         /// <param name="id">Student id</param>
         /// <param name="student">Updated student details</param>
-        /// <returns></returns>
-        /// <response code="204">Returns no content if successful</response>
-        /// <response code="400">If the student id is different than id in content</response>
+        /// <returns>Api response</returns>
+        /// <response code="200">Returns true if successfully updated</response>
+        /// <response code="400">If model state is not valid</response>
         /// <response code="404">If the student is not found</response>
+        /// <response code="500">If exception occurs during delete</response>
         [HttpPut("{id}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> UpdateStudent(int id, Student student)
+        [ProducesResponseType(Status200OK)]
+        [ProducesResponseType(Status400BadRequest)]
+        [ProducesResponseType(Status404NotFound)]
+        [ProducesResponseType(Status500InternalServerError)]
+        public async Task<ApiResponse> UpdateStudent(int id, Student student)
         {
             if (id != student.Id)
             {
-                return BadRequest();
+                throw new ApiException($"Id {id} with entity id: {student.Id} does not match.", Status400BadRequest);
             }
 
-            try
+            if (!await _repository.ExistsAsync(id))
             {
-                _repository.Update(student);
-                var updatedStudent = await _repository.SaveAsync(student);
+                throw new ApiException($"Student with Id: {id} does not exist.", Status404NotFound);
             }
-            catch (DbUpdateConcurrencyException)
+
+            if (ModelState.IsValid)
             {
-                if (!_repository.Exists(id))
+                try
                 {
-                    return NotFound();
+                    await _repository.UpdateAsync(student);
+
+                    return new ApiResponse($"Student with Id: {student.Id} successfully updated.", true);
                 }
-                else
+                catch (System.Exception e)
                 {
-                    throw;
+                    throw new ApiException(e);
                 }
             }
-
-            return NoContent();
-        }
-
-        /// <summary>
-        /// Adds a new student
-        /// </summary>
-        /// <remarks>
-        /// Sample request:
-        ///
-        ///     POST /api/Students
-        ///     {
-        ///       "id": 0,
-        ///       "name": "Ibrahim Gokalp",
-        ///       "email": "gokalpi@gmail.com",
-        ///       "phone": "+90-xxx-xxxxxxx",
-        ///       "gender": "Male",
-        ///       "bloodGroup": "XX",
-        ///       "address": {
-        ///         "street": "XXXX",
-        ///         "city": "Istanbul",
-        ///         "state": "TR",
-        ///         "country": "Turkey"
-        ///       }
-        ///     }
-        ///
-        /// </remarks>
-        /// <param name="student">Student details</param>
-        /// <returns>Created student</returns>
-        /// <response code="201">Returns the created student</response>
-        /// <response code="400">If the student is null</response>
-        [HttpPost]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<Student>> AddStudent(Student student)
-        {
-            _repository.Add(student);
-            var addedStudent = await _repository.SaveAsync(student);
-
-            return CreatedAtAction("GetStudent", new { id = addedStudent.Id }, addedStudent);
+            else
+                throw new ApiException(ModelState.AllErrors());
         }
 
         /// <summary>
         /// Deletes a specific student
         /// </summary>
         /// <param name="id">Student id</param>
-        /// <returns>Deleted student</returns>
-        /// <response code="200">Returns the deleted student</response>
-        /// <response code="400">If the id is null</response>
+        /// <returns>Api response</returns>
+        /// <response code="200">Returns true if successfully deleted</response>
         /// <response code="404">If the student is not found</response>
+        /// <response code="500">If exception occurs during delete</response>
         [HttpDelete("{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<Student>> DeleteStudent(int id)
+        [ProducesResponseType(Status200OK)]
+        [ProducesResponseType(Status404NotFound)]
+        [ProducesResponseType(Status500InternalServerError)]
+        public async Task<ApiResponse> DeleteStudent(int id)
         {
             var student = await _repository.GetByIdAsync(id);
             if (student == null)
             {
-                return NotFound();
+                throw new ApiException($"Student with Id: {id} does not exist.", Status404NotFound);
             }
 
-            _repository.Delete(student);
-            var deletedStudent = await _repository.SaveAsync(student);
+            try
+            {
+                await _repository.DeleteAsync(student);
 
-            return deletedStudent;
+                return new ApiResponse($"Student with Id: {id} successfully deleted.", true);
+            }
+            catch (System.Exception e)
+            {
+                throw new ApiException(e);
+            }
         }
     }
 }

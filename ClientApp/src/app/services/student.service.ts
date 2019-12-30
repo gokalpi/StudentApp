@@ -18,7 +18,7 @@ export class StudentService {
     });
 
     // console.log("Students:", response.data);
-    return response.data;
+    return response.data.result;
   }
 
   async getStudent(studentId: number): Promise<Student> {
@@ -31,7 +31,7 @@ export class StudentService {
     });
 
     // console.log("Student:", response.data);
-    return response.data;
+    return response.data.result;
   }
 
   async createStudent(newStudent: any): Promise<Student> {
@@ -48,13 +48,13 @@ export class StudentService {
     );
 
     // console.log("Created student:", response.data);
-    return response.data;
+    return response.data.result;
   }
 
   async updateStudent(studentId: number, updatedStudent: any): Promise<void> {
     console.log(`Updating student ${studentId}`);
 
-    await Axios.put(
+    const response = await Axios.put(
       `${apiEndpoint}/students/${studentId}`,
       JSON.stringify(updatedStudent),
       {
@@ -63,15 +63,21 @@ export class StudentService {
         }
       }
     );
+
+    // console.log("Updated student:", response.data);
+    return response.data.result;
   }
 
   async deleteStudent(studentId: number): Promise<void> {
     console.log(`Deleting student ${studentId}`);
 
-    await Axios.delete(`${apiEndpoint}/students/${studentId}`, {
+    const response = await Axios.delete(`${apiEndpoint}/students/${studentId}`, {
       headers: {
         "Content-Type": "application/json"
       }
     });
+
+    // console.log("Deleted student:", response.data);
+    return response.data.result;
   }
 }

@@ -13,11 +13,6 @@ namespace StudentApp.Data
             _context = context;
         }
 
-        public bool Exists(object id)
-        {
-            return null != GetByIdAsync(id);
-        }
-
         public async Task<IEnumerable<T>> GetAllAsync()
         {
             return await _context.Set<T>().ToListAsync();
@@ -28,25 +23,42 @@ namespace StudentApp.Data
             return await _context.Set<T>().FindAsync(id);
         }
 
-        public void Add(T entity)
+        public async Task<T> CreateAsync(T entity)
         {
             _context.Set<T>().Add(entity);
-        }
-
-        public void Update(T entity)
-        {
-            _context.Set<T>().Update(entity);
-        }
-
-        public void Delete(T entity)
-        {
-            _context.Set<T>().Remove(entity);
-        }
-
-        public async Task<T> SaveAsync(T entity)
-        {
             await _context.SaveChangesAsync();
             return entity;
+        }
+
+        public async Task<int> UpdateAsync(T entity)
+        {
+            AttachEntity(entity);
+
+            _context.Entry(entity).State = EntityState.Modified;
+
+            return await _context.SaveChangesAsync();
+        }
+
+        public async Task<int> DeleteAsync(T entity)
+        {
+            AttachEntity(entity);
+
+            _context.Set<T>().Remove(entity);
+
+            return await _context.SaveChangesAsync();
+        }
+
+        public async Task<bool> ExistsAsync(object id)
+        {
+            return null != await GetByIdAsync(id);
+        }
+
+        private void AttachEntity(T entity)
+        {
+            if (_context.Entry(entity).State == EntityState.Detached)
+            {
+                _context.Set<T>().Attach(entity);
+            }
         }
     }
 }

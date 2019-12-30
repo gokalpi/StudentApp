@@ -5,18 +5,16 @@ namespace StudentApp.Data
 {
     public interface IRepository<T> where T : class
     {
-        bool Exists(object id);
-
         Task<IEnumerable<T>> GetAllAsync();
 
         Task<T> GetByIdAsync(object id);
 
-        void Add(T entity);
+        Task<T> CreateAsync(T entity);
 
-        void Update(T entity);
+        Task<int> UpdateAsync(T entity);
 
-        void Delete(T entity);
+        Task<int> DeleteAsync(T entity);
 
-        Task<T> SaveAsync(T entity);
+        Task<bool> ExistsAsync(object id);
     }
 }
