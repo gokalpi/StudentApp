@@ -1,53 +1,55 @@
+using AutoWrapper;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.SpaServices.AngularCli;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.OpenApi.Models;
 using StudentApp.Data;
+using StudentApp.Helpers.Extensions;
 using StudentApp.Models;
-using System;
 
 namespace StudentApp
 {
+    /// <summary>
+    /// Represents the startup process for the application.
+    /// </summary>
     public class Startup
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Startup"/> class.
+        /// </summary>
+        /// <param name="configuration">The current configuration.</param>
+        /// <param name="env">The current working environment.</param>
         public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
             _currentEnvironment = env;
             Configuration = configuration;
         }
 
+        /// <summary>
+        /// Gets the current working environment
+        /// </summary>
         private readonly IWebHostEnvironment _currentEnvironment;
+
+        /// <summary>
+        /// Gets the current configuration.
+        /// </summary>
+        /// <value>The current application configuration.</value>
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
+        /// <summary>
+        /// Configures services for the application.
+        /// </summary>
+        /// <param name="services">The collection of services to configure the application with.</param>
         public void ConfigureServices(IServiceCollection services)
         {
-            // If application is running in development mode, then use in memory database
-            if (_currentEnvironment.IsDevelopment())
-            {
-                services.AddDbContext<StudentDbContext>(options =>
-                    options.UseInMemoryDatabase("StudentApp"));
-            }
-            else
-            {
-                services.AddDbContext<StudentDbContext>(options =>
-                    options.UseSqlServer(
-                        Configuration.GetConnectionString("DefaultConnection")));
-            }
+            services.AddDatabaseServices(Configuration, _currentEnvironment);
 
-            services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
-            .AddEntityFrameworkStores<StudentDbContext>();
+            services.AddIdentity();
 
-            services.AddIdentityServer()
-                .AddApiAuthorization<ApplicationUser, StudentDbContext>();
-
-            services.AddAuthentication()
-                .AddIdentityServerJwt();
             services.AddControllersWithViews();
             services.AddRazorPages();
 
@@ -57,48 +59,31 @@ namespace StudentApp
                 configuration.RootPath = "ClientApp/dist";
             });
 
-            // Register the Swagger generator, defining 1 or more Swagger documents
-            services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new OpenApiInfo
-                {
-                    Version = "v1",
-                    Title = "Student API",
-                    Description = "Student Management API",
-                    TermsOfService = new Uri("https://example.com/terms"),
-                    Contact = new OpenApiContact
-                    {
-                        Name = "Ibrahim Gokalp",
-                        Email = "gokalpi@gmail.com",
-                        Url = new Uri("https://github.com/gokalpi"),
-                    },
-                    License = new OpenApiLicense
-                    {
-                        Name = "Use under LICX",
-                        Url = new Uri("https://example.com/license"),
-                    }
-                });
+            services.AddVersioning();
 
-                // Set the comments path for the Swagger JSON and UI.
-                var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
-                var xmlPath = System.IO.Path.Combine(AppContext.BaseDirectory, xmlFile);
-                c.IncludeXmlComments(xmlPath);
-            });
-
-            //services.AddCors(options =>
-            //{
-            //    options.AddPolicy("CorsPolicy",
-            //        builder => builder.AllowAnyOrigin()
-            //            .AllowAnyMethod()
-            //            .AllowAnyHeader()
-            //            .AllowCredentials());
-            //});
+            services.AddSwagger();
 
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+
+            ////Configure CORS to allow any origin, header and method.
+            //services.AddCors(options =>
+            //{
+            //    options.AddPolicy("AllowAll",
+            //    builder =>
+            //    {
+            //        builder.AllowAnyOrigin()
+            //               .AllowAnyHeader()
+            //               .AllowAnyMethod();
+            //    });
+            //});
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app)
+        /// <summary>
+        /// Configures the application using the provided builder, hosting environment, and API version description provider.
+        /// </summary>
+        /// <param name="app">The current application builder.</param>
+        /// <param name="provider">The API version descriptor provider used to enumerate defined API versions.</param>
+        public void Configure(IApplicationBuilder app, IApiVersionDescriptionProvider provider)
         {
             if (_currentEnvironment.IsDevelopment())
             {
@@ -121,16 +106,15 @@ namespace StudentApp
             }
 
             // Enable middleware to serve generated Swagger as a JSON endpoint.
-            app.UseSwagger();
+            app.UseVersionedSwagger(provider);
 
-            // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
-            // specifying the Swagger JSON endpoint.
-            app.UseSwaggerUI(c =>
-            {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Student API V1");
-            });
+            //Enable AutoWrapper.Core
+            app.UseApiResponseAndExceptionWrapper(new AutoWrapperOptions { IsApiOnly = false });
 
             app.UseRouting();
+
+            ////Enable CORS
+            //app.UseCors("AllowAll");
 
             app.UseAuthentication();
             app.UseIdentityServer();

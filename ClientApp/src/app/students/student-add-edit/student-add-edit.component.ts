@@ -1,6 +1,7 @@
 import { Component, OnInit } from "@angular/core";
 import { FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { Router, ActivatedRoute } from "@angular/router";
+import { ToastrService } from 'ngx-toastr';
 
 import { StudentService } from "src/app/services/student.service";
 import { Student } from "src/app/models/Student";
@@ -22,7 +23,8 @@ export class StudentAddEditComponent implements OnInit {
     private formBuilder: FormBuilder,
     private studentService: StudentService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private toastr: ToastrService
   ) {
     if (this.route.snapshot.params["id"]) {
       this.studentId = this.route.snapshot.params["id"];
@@ -78,7 +80,7 @@ export class StudentAddEditComponent implements OnInit {
     return this.studentForm.get("Email");
   }
   get phone() {
-    return this.studentForm.get("Name");
+    return this.studentForm.get("Phone");
   }
   get gender() {
     return this.studentForm.get("Gender");
@@ -126,6 +128,8 @@ export class StudentAddEditComponent implements OnInit {
 
         await this.studentService.updateStudent(this.studentId, updateStudent);
 
+        this.toastr.success(`Updated student ${this.studentId}`, 'Success', { timeOut: 2000 });
+
         console.log("Successfully updated student");
       } else {
         let newStudent: Student = {
@@ -144,11 +148,15 @@ export class StudentAddEditComponent implements OnInit {
 
         await this.studentService.createStudent(newStudent);
 
+        this.toastr.success(`Created student ${newStudent.Name}`, 'Success', { timeOut: 2000 });
+
         console.log("Successfully created student");
       }
 
       this.router.navigate(["/students"]);
     } catch (error) {
+      this.toastr.error(`Error creating student ${error}`, 'Error', { timeOut: 2000 });
+
       console.error(error);
     }
   }
