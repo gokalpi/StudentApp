@@ -5,7 +5,7 @@ using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System;
 
-namespace StudentApp.Helpers
+namespace StudentApp.Helpers.Filters
 {
     /// <summary>
     /// Configures the Swagger generation options.
