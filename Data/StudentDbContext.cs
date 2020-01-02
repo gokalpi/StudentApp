@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using StudentApp.Models;
+using StudentApp.V1.Models;
 
 namespace StudentApp.Data
 {
@@ -21,6 +21,6 @@ namespace StudentApp.Data
             builder.Entity<Student>().OwnsOne(s => s.Address);
         }
 
-        public DbSet<StudentApp.Models.Student> Student { get; set; }
+        public DbSet<Student> Student { get; set; }
     }
 }

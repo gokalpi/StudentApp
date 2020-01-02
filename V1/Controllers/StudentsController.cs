@@ -3,7 +3,7 @@ using AutoWrapper.Wrappers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using StudentApp.Data;
-using StudentApp.Models;
+using StudentApp.V1.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using static Microsoft.AspNetCore.Http.StatusCodes;
