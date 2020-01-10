@@ -31,8 +31,8 @@ namespace StudentApp.V1.Controllers
         /// <returns>List of all students</returns>
         /// <response code="200">The successfully retrieved students.</response>
         [HttpGet]
-        [ProducesResponseType(typeof(IEnumerable<Student>), Status200OK)]
-        public async Task<IEnumerable<Student>> GetAllStudents()
+        [ProducesResponseType(typeof(IList<Student>), Status200OK)]
+        public async Task<IList<Student>> GetAllStudents()
         {
             _logger.LogInformation("Getting all students");
 
