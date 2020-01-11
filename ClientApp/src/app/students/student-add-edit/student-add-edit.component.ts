@@ -1,23 +1,32 @@
-import { Component, OnInit } from "@angular/core";
-import { FormBuilder, FormGroup, Validators } from "@angular/forms";
+import { Component, OnInit, AfterViewInit, OnDestroy, ElementRef, ViewChildren } from "@angular/core";
+import { FormControlName, FormGroup, FormBuilder, Validators } from "@angular/forms";
+import { Subscription, Observable, fromEvent, merge } from "rxjs";
 import { Router, ActivatedRoute } from "@angular/router";
-import { ToastrService } from 'ngx-toastr';
+import { ToastrService } from "ngx-toastr";
+import { debounceTime } from "rxjs/operators";
 
 import { StudentService } from "src/app/services/student.service";
 import { Student } from "src/app/models/Student";
+import { GenericValidator } from "src/app/shared/generic-validator";
 
 @Component({
   selector: "app-student-add-edit",
   templateUrl: "./student-add-edit.component.html",
   styleUrls: ["./student-add-edit.component.css"]
 })
-export class StudentAddEditComponent implements OnInit {
-  studentForm: FormGroup;
-  submitted = false;
-  actionType = "Add";
+export class StudentAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
   bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
-  student;
-  studentId: number;
+  @ViewChildren(FormControlName, { read: ElementRef })
+  formInputElements: ElementRef[];
+  pageTitle = "Student Edit";
+  studentForm: FormGroup;
+  student: Student;
+  private sub: Subscription;
+  errorMessage: string;
+
+  displayMessage: { [key: string]: string } = {};
+  private validationMessages: { [key: string]: { [key: string]: string } };
+  private genericValidator: GenericValidator;
 
   constructor(
     private formBuilder: FormBuilder,
@@ -26,142 +35,202 @@ export class StudentAddEditComponent implements OnInit {
     private router: Router,
     private toastr: ToastrService
   ) {
-    if (this.route.snapshot.params["id"]) {
-      this.studentId = this.route.snapshot.params["id"];
-    }
-    console.log("studentId", this.studentId);
+    this.validationMessages = {
+      name: {
+        required: "Student name is required.",
+        minlength: "Student name must be at least two characters.",
+        maxlength: "Student name cannot exceed 50 characters."
+      },
+      gender: {
+        required: "Student gender is required."
+      },
+      bloodGroup: {
+        required: "Student blood group is required."
+      },
+      street: {
+        required: "Student street is required.",
+        minlength: "Student street must be at least two characters.",
+        maxlength: "Student street cannot exceed 100 characters."
+      },
+      city: {
+        required: "Student city is required.",
+        minlength: "Student city must be at least two characters.",
+        maxlength: "Student city cannot exceed 100 characters."
+      },
+      country: {
+        required: "Student country is required.",
+        minlength: "Student country must be at least two characters.",
+        maxlength: "Student country cannot exceed 100 characters."
+      }
+    };
 
+    this.genericValidator = new GenericValidator(this.validationMessages);
+  }
+
+  ngOnInit() {
     this.studentForm = this.formBuilder.group({
-      Id: 0,
-      Name: ["", Validators.required],
-      Email: [""],
-      Phone: [""],
-      Gender: ["", Validators.required],
-      BloodGroup: ["", Validators.required],
-      Address: this.formBuilder.group({
-        Street: ["", Validators.required],
-        City: ["", Validators.required],
-        State: [""],
-        Country: ["", Validators.required]
+      id: 0,
+      name: [
+        "",
+        Validators.required
+      ],
+      email: [""],
+      phone: [""],
+      gender: ["", Validators.required],
+      bloodGroup: ["", Validators.required],
+      address: this.formBuilder.group({
+        street: [
+          "",
+          Validators.required
+        ],
+        city: [
+          "",
+          Validators.required
+        ],
+        state: [""],
+        country: [
+          "",
+          Validators.required
+        ]
       })
+    });
+
+    this.sub = this.route.paramMap.subscribe(params => {
+      const id = parseInt(params.get("id"));
+      if (isNaN(id)) {
+        console.log("Adding new student");
+
+        const newStudent = {
+          id: 0,
+          name: "",
+          email: "",
+          phone: "",
+          gender: "",
+          bloodGroup: "",
+          address: {
+            street: "",
+            city: "",
+            state: "",
+            country: ""
+          }
+        };
+
+        this.displayStudent(newStudent);
+      } else {
+        console.log(`Updating student ${id}`);
+        this.getStudent(id);
+      }
     });
   }
 
-  async ngOnInit() {
-    try {
-      if (this.studentId > 0) {
-        this.actionType = "Edit";
+  ngOnDestroy(): void {
+    this.sub.unsubscribe();
+  }
 
-        this.student = await this.studentService.getStudent(this.studentId);
+  ngAfterViewInit(): void {
+    // Watch for the blur event from any input element on the form.
+    const controlBlurs: Observable<any>[] = this.formInputElements.map((formControl: ElementRef) =>
+      fromEvent(formControl.nativeElement, "blur")
+    );
 
-        this.id.setValue(this.student.id);
-        this.name.setValue(this.student.name);
-        this.email.setValue(this.student.email);
-        this.phone.setValue(this.student.phone);
-        this.gender.setValue(this.student.gender);
-        this.bloodGroup.setValue(this.student.bloodGroup);
-        this.street.setValue(this.student.address.street);
-        this.city.setValue(this.student.address.city);
-        this.state.setValue(this.student.address.state);
-        this.country.setValue(this.student.address.country);
+    // Merge the blur event observable with the valueChanges observable
+    merge(this.studentForm.valueChanges, ...controlBlurs)
+      .pipe(debounceTime(800))
+      .subscribe(value => {
+        this.displayMessage = this.genericValidator.processMessages(
+          this.studentForm
+        );
+      });
+  }
+
+  getStudent(id: number) {
+    this.studentService.getStudent(id).subscribe(
+      response => {
+        this.student = <Student>response.result;
+        this.displayStudent(this.student);
+      },
+      error => (this.errorMessage = <any>error)
+    );
+  }
+
+  displayStudent(student: Student): void {
+    if (this.studentForm) {
+      this.studentForm.reset();
+    }
+
+    if (student.id == 0) {
+      this.pageTitle = "Add Student";
+    } else {
+      this.pageTitle = `Edit Student: ${this.student.name}`;
+    }
+
+    // Update the data on the form
+    this.studentForm.patchValue({
+      id: student.id,
+      name: student.name,
+      email: student.email,
+      phone: student.phone,
+      gender: student.gender,
+      bloodGroup: student.bloodGroup,
+      address: {
+        street: student.address.street,
+        city: student.address.city,
+        state: student.address.state,
+        country: student.address.country
       }
-    } catch (error) {
-      console.error(error);
-    }
+    });
   }
 
-  get id() {
-    return this.studentForm.get("Id");
-  }
-  get name() {
-    return this.studentForm.get("Name");
-  }
-  get email() {
-    return this.studentForm.get("Email");
-  }
-  get phone() {
-    return this.studentForm.get("Phone");
-  }
-  get gender() {
-    return this.studentForm.get("Gender");
-  }
-  get bloodGroup() {
-    return this.studentForm.get("BloodGroup");
-  }
-  get street() {
-    return this.studentForm.get("Address").get("Street");
-  }
-  get city() {
-    return this.studentForm.get("Address").get("City");
-  }
-  get state() {
-    return this.studentForm.get("Address").get("State");
-  }
-  get country() {
-    return this.studentForm.get("Address").get("Country");
-  }
+  saveStudent(): void {
+    if (this.studentForm.valid) {
+      if (this.studentForm.dirty) {
+        const p = { ...this.student, ...this.studentForm.value };
+        if (p.id === 0) {
+          this.studentService.createStudent(p).subscribe(
+            () => {
+              this.toastr.success(`Created student ${p.name}`, "Success", {
+                timeOut: 2000
+              });
 
-  async onSubmit() {
-    this.submitted = true;
+              this.onSaveComplete();
+            },
+            (error: any) => {
+              this.toastr.error(`Error creating student ${error}`, "Error", {
+                timeOut: 2000
+              });
 
-    // stop here if form is invalid
-    if (this.studentForm.invalid) {
-      return;
-    }
+              this.errorMessage = <any>error;
+            }
+          );
+        } else {
+          this.studentService.updateStudent(p).subscribe(
+            () => {
+              this.toastr.success(`Updated student ${p.name}`, "Success", {
+                timeOut: 2000
+              });
 
-    try {
-      if (this.studentId) {
-        let updateStudent: Student = {
-          Id: this.id.value,
-          Name: this.name.value,
-          Email: this.email.value,
-          Phone: this.phone.value,
-          Gender: this.gender.value,
-          BloodGroup: this.bloodGroup.value,
-          Address: {
-            Street: this.street.value,
-            City: this.city.value,
-            State: this.state.value,
-            Country: this.country.value
-          }
-        };
+              this.onSaveComplete();
+            },
+            (error: any) => {
+              this.toastr.error(`Error updating student ${error}`, "Error", {
+                timeOut: 2000
+              });
 
-        await this.studentService.updateStudent(this.studentId, updateStudent);
-
-        this.toastr.success(`Updated student ${this.studentId}`, 'Success', { timeOut: 2000 });
-
-        console.log("Successfully updated student");
+              this.errorMessage = <any>error;
+            }
+          );
+        }
       } else {
-        let newStudent: Student = {
-          Name: this.name.value,
-          Email: this.email.value,
-          Phone: this.phone.value,
-          Gender: this.gender.value,
-          BloodGroup: this.bloodGroup.value,
-          Address: {
-            Street: this.street.value,
-            City: this.city.value,
-            State: this.state.value,
-            Country: this.country.value
-          }
-        };
-
-        await this.studentService.createStudent(newStudent);
-
-        this.toastr.success(`Created student ${newStudent.Name}`, 'Success', { timeOut: 2000 });
-
-        console.log("Successfully created student");
+        this.onSaveComplete();
       }
-
-      this.router.navigate(["/students"]);
-    } catch (error) {
-      this.toastr.error(`Error creating student ${error}`, 'Error', { timeOut: 2000 });
-
-      console.error(error);
+    } else {
+      this.errorMessage = "Please correct the validation errors.";
     }
   }
 
-  onReset() {
+  onSaveComplete(): void {
+    // Reset the form to clear the flags
+    this.studentForm.reset();
     this.router.navigate(["/students"]);
   }
 }

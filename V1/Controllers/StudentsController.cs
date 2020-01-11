@@ -32,7 +32,7 @@ namespace StudentApp.V1.Controllers
         /// <response code="200">The successfully retrieved students.</response>
         [HttpGet]
         [ProducesResponseType(typeof(IList<Student>), Status200OK)]
-        public async Task<IList<Student>> GetAllStudents()
+        public async Task<IList<Student>> GetStudents()
         {
             _logger.LogInformation("Getting all students");
 

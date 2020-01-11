@@ -10,7 +10,9 @@ import { StudentService } from "src/app/services/student.service";
   styleUrls: ["./student-details.component.css"]
 })
 export class StudentDetailsComponent implements OnInit {
-  student;
+  pageTitle = "Student Detail";
+  errorMessage = "";
+  student: Student | undefined;
 
   constructor(
     private studentService: StudentService,
@@ -18,17 +20,26 @@ export class StudentDetailsComponent implements OnInit {
     private router: Router
   ) {}
 
-  async ngOnInit() {
+  ngOnInit() {
     try {
-      var id = parseInt(this.route.snapshot.paramMap.get("id"));
-      this.student = await this.studentService.getStudent(id);
-      console.log("Student", this.student);
+      const param = this.route.snapshot.paramMap.get("id");
+      if (param) {
+        const id = parseInt(param);
+        this.getStudent(id);
+      }
     } catch (error) {
       console.error(error);
     }
   }
+  
+  getStudent(id: number) {
+    this.studentService.getStudent(id).subscribe(
+      response => (this.student = <Student>response.result),
+      error => (this.errorMessage = <any>error)
+    );
+  }
 
-  gotoStudentList() {
+  onBack(): void {
     this.router.navigate(["/students"]);
   }
 }
