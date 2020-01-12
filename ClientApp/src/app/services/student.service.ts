@@ -1,5 +1,7 @@
 import { Injectable } from "@angular/core";
-import Axios from "axios";
+import { HttpClient, HttpHeaders } from "@angular/common/http";
+import { Observable, throwError } from "rxjs";
+import { catchError, map } from "rxjs/operators";
 
 import { apiEndpoint } from "src/config";
 import { Student } from "src/app/models/Student";
@@ -8,76 +10,64 @@ import { Student } from "src/app/models/Student";
   providedIn: "root"
 })
 export class StudentService {
-  async getAllStudents(): Promise<Student[]> {
+  private headers = new HttpHeaders({ "Content-Type": "application/json" });
+  private studentsUrl = `${apiEndpoint}/v1/students`;
+
+  constructor(private http: HttpClient) {}
+
+  getStudents(): Observable<Student[]> {
     console.log("Getting all students");
 
-    const response = await Axios.get(`${apiEndpoint}/v1/students`, {
-      headers: {
-        "Content-Type": "application/json"
-      }
-    });
-
-    // console.log("Students:", response.data);
-    return response.data.result;
+    return this.http
+      .get<Student[]>(this.studentsUrl, { headers: this.headers })
+      .pipe(catchError(this.handleError));
   }
 
-  async getStudent(studentId: number): Promise<Student> {
-    console.log(`Getting student ${studentId}`);
+  getStudent(id: number): Observable<Student> {
+    console.log(`Getting student ${id}`);
 
-    const response = await Axios.get(`${apiEndpoint}/v1/students/${studentId}`, {
-      headers: {
-        "Content-Type": "application/json"
-      }
-    });
-
-    // console.log("Student:", response.data);
-    return response.data.result;
+    return this.http
+      .get<Student>(`${this.studentsUrl}/${id}`, { headers: this.headers })
+      .pipe(catchError(this.handleError));
   }
 
-  async createStudent(newStudent: any): Promise<Student> {
+  createStudent(student: Student): Observable<Student> {
     console.log("Creating student");
 
-    const response = await Axios.post(
-      `${apiEndpoint}/v1/students`,
-      JSON.stringify(newStudent),
-      {
-        headers: {
-          "Content-Type": "application/json"
-        }
-      }
-    );
-
-    // console.log("Created student:", response.data);
-    return response.data.result;
+    return this.http
+      .post<Student>(this.studentsUrl, student, { headers: this.headers })
+      .pipe(catchError(this.handleError));
   }
 
-  async updateStudent(studentId: number, updatedStudent: any): Promise<void> {
-    console.log(`Updating student ${studentId}`);
+  updateStudent(student: Student): Observable<Student> {
+    console.log(`Updating student ${student.id}`);
 
-    const response = await Axios.put(
-      `${apiEndpoint}/v1/students/${studentId}`,
-      JSON.stringify(updatedStudent),
-      {
-        headers: {
-          "Content-Type": "application/json"
-        }
-      }
-    );
-
-    // console.log("Updated student:", response.data);
-    return response.data.result;
+    return this.http
+      .put<Student>(`${this.studentsUrl}/${student.id}`, student, {
+        headers: this.headers
+      })
+      .pipe(
+        map(() => student),
+        catchError(this.handleError)
+      );
   }
 
-  async deleteStudent(studentId: number): Promise<void> {
-    console.log(`Deleting student ${studentId}`);
+  deleteStudent(id: number): Observable<{}> {
+    console.log(`Deleting student ${id}`);
 
-    const response = await Axios.delete(`${apiEndpoint}/v1/students/${studentId}`, {
-      headers: {
-        "Content-Type": "application/json"
-      }
-    });
+    return this.http
+      .delete<Student>(`${this.studentsUrl}/${id}`, { headers: this.headers })
+      .pipe(catchError(this.handleError));
+  }
 
-    // console.log("Deleted student:", response.data);
-    return response.data.result;
+  private handleError(err) {
+    let errorMessage: string;
+    if (err.error instanceof ErrorEvent) {
+      errorMessage = `An error occurred: ${err.error.message}`;
+    } else {
+      errorMessage = `Backend returned code ${err.status}: ${err.body.error}`;
+    }
+    console.error(err);
+    return throwError(errorMessage);
   }
 }

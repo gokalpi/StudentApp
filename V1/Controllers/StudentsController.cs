@@ -3,7 +3,7 @@ using AutoWrapper.Wrappers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using StudentApp.Data;
-using StudentApp.Models;
+using StudentApp.V1.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using static Microsoft.AspNetCore.Http.StatusCodes;
@@ -31,8 +31,8 @@ namespace StudentApp.V1.Controllers
         /// <returns>List of all students</returns>
         /// <response code="200">The successfully retrieved students.</response>
         [HttpGet]
-        [ProducesResponseType(typeof(IEnumerable<Student>), Status200OK)]
-        public async Task<IEnumerable<Student>> GetAllStudents()
+        [ProducesResponseType(typeof(IList<Student>), Status200OK)]
+        public async Task<IList<Student>> GetStudents()
         {
             _logger.LogInformation("Getting all students");
 

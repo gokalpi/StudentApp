@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using StudentApp.Data;
-using StudentApp.Models;
+using StudentApp.V1.Models;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;

@@ -1,5 +1,4 @@
 using AutoWrapper;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
@@ -9,7 +8,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using StudentApp.Data;
 using StudentApp.Helpers.Extensions;
-using StudentApp.Models;
 
 namespace StudentApp
 {

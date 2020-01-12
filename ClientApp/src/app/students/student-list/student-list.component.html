@@ -1,3 +1,72 @@
+<div class="card">
+  <div class="card-header">
+    {{ pageTitle }}
+  </div>
+
+  <div class="card-body">
+    <div class="row">
+      <div class="col-md-2">Filter by:</div>
+      <div class="col-md-4">
+        <input type="text" [(ngModel)]="listFilter" />
+      </div>
+      <div class="col-md-3"></div>
+      <div class="col-md-3">
+        <a [routerLink]="['/students/add']" class="btn btn-primary btn-sm add-new"><i class="fas fa-plus"></i> New Student</a>
+      </div>
+    </div>
+    <div class="row" *ngIf="listFilter">
+      <div class="col-md-6">
+        <h4>Filtered by: {{ listFilter }}</h4>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table mb-0" *ngIf="students && students.length">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Phone</th>
+            <th>Email</th>
+            <th>Gender</th>
+            <th>Blood Group</th>
+            <th>Street</th>
+            <th>City</th>
+            <th>State</th>
+            <th>Country</th>
+            <th></th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let student of filteredStudents">
+            <td>
+              <a [routerLink]="['/students', student.id]">{{ student.name }}</a>
+            </td>
+            <td>{{ student.phone }}</td>
+            <td>{{ student.email }}</td>
+            <td>{{ student.gender }}</td>
+            <td>{{ student.bloodGroup }}</td>
+            <td>{{ student.address.street }}</td>
+            <td>{{ student.address.city }}</td>
+            <td>{{ student.address.state }}</td>
+            <td>{{ student.address.country }}</td>
+            <td>
+              <a [routerLink]="['/students', student.id, 'edit']" class="edit"><i class="fas fa-edit"></i></a>
+            </td>
+            <td>
+              <a [routerLink]="" (click)="deleteStudent(student.id, student.name)" class="delete"><i class="fas fa-trash-alt"></i></a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="errorMessage" class="alert alert-danger">
+  Error: {{ errorMessage }}
+</div>
+<!-- 
 <div class="table-wrapper">
   <div class="table-title">
     <div class="row">
@@ -12,7 +81,7 @@
 
   <p *ngIf="!students"><em>Loading...</em></p>
 
-  <table class="table table-sm table-hover" *ngIf="students?.length>0">
+  <table class="table table-sm table-hover" *ngIf="students?.length > 0">
     <thead>
       <tr>
         <th>Id</th>
@@ -26,8 +95,10 @@
     </thead>
     <tbody>
       <tr *ngFor="let student of students">
-        <td>{{student.id}}</td>
-        <td><a [routerLink]="['/students/', student.id]">{{ student.name }}</a></td>
+        <td>{{ student.id }}</td>
+        <td>
+          <a [routerLink]="['/students/', student.id]">{{ student.name }}</a>
+        </td>
         <td>{{ student.gender }}</td>
         <td>{{ student.bloodGroup }}</td>
         <td>{{ student.phone }}</td>
@@ -39,4 +110,4 @@
       </tr>
     </tbody>
   </table>
-</div>
+</div> -->

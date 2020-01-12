@@ -10,42 +10,80 @@ import { Student } from "src/app/models/Student";
   styleUrls: ["./student-list.component.css"]
 })
 export class StudentListComponent implements OnInit {
-  students: any[];
+  pageTitle = "Student List";
+  filteredStudents;
+  students;
+  errorMessage = "";
+  _listFilter = "";
+
+  get listFilter(): string {
+    return this._listFilter;
+  }
+
+  set listFilter(value: string) {
+    this._listFilter = value;
+    this.filteredStudents = this._listFilter
+      ? this.performFilter(this._listFilter)
+      : this.students;
+  }
 
   constructor(
     private studentService: StudentService,
     private toastr: ToastrService
   ) {}
 
-  async ngOnInit() {
-    try {
-      this.getAllStudents();
-    } catch (e) {
-      alert(`Failed to get students: ${e.message}`);
-    }
+  performFilter(filterBy: string): Student[] {
+    filterBy = filterBy.toLocaleLowerCase();
+    return this.students.filter(
+      (student: Student) =>
+        student.name.toLocaleLowerCase().indexOf(filterBy) !== -1
+    );
   }
 
-  async getAllStudents() {
-    try {
-      this.students = await this.studentService.getAllStudents();
-      console.log("Students", this.students);
-    } catch (error) {
-      console.error(error);
-    }
+  ngOnInit() {
+    this.getStudents();
   }
 
-  public async deleteStudent(studentId: number) {
-    const ans = confirm("Do you want to delete student with id: " + studentId);
-    if (ans) {
-      try {
-        await this.studentService.deleteStudent(studentId);
-        console.log(`Student with id ${studentId} is deleted`);
-        this.toastr.success(`Deleted student ${studentId}`, 'Success', { timeOut: 2000 });
+  getStudents() {
+    this.studentService.getStudents().subscribe(
+      response => {
+        this.students = response.result;
+        this.filteredStudents = this.students;
+      },
+      error => (this.errorMessage = <any>error)
+    );
+  }
 
-        this.getAllStudents();
-      } catch (error) {
-        this.toastr.error(`Error deleting student ${studentId}.\nError: ${error}`, 'Error', { timeOut: 2000 });
-        console.error(error);
+  deleteStudent(id: number, name: string): void {
+    console.log(`Deleting student ${id} with name ${name}`);
+
+    if (isNaN(id)) {
+      // Don't delete, it was never saved.
+      this.getStudents();
+    } else {
+      if (confirm(`Are you sure want to delete this student: ${name}?`)) {
+        this.studentService.deleteStudent(id).subscribe(
+          () => {
+            console.log(`Student ${name} is deleted`);
+
+            this.toastr.success(`Deleted student ${name}`, "Success", {
+              timeOut: 2000
+            });
+
+            this.getStudents();
+          },
+          (error: any) => {
+            console.error(`Error deleting student ${name}.\nError: ${error}`);
+
+            this.toastr.error(
+              `Error deleting student ${name}.\nError: ${error}`,
+              "Error",
+              { timeOut: 2000 }
+            );
+
+            this.errorMessage = <any>error;
+          }
+        );
       }
     }
   }
