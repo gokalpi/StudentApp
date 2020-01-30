@@ -1,6 +1,6 @@
-﻿namespace StudentApp.V1.Domain.Models
+﻿namespace StudentApp.V1.DTO.Response
 {
-    public class Address
+    public class AddressDto
     {
         public string Street { get; set; }
         public string City { get; set; }

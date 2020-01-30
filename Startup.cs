@@ -1,3 +1,4 @@
+using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
@@ -67,6 +68,8 @@ namespace StudentApp
             services.AddScoped<IStudentRepository, StudentRepository>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IStudentService, StudentService>();
+
+            services.AddAutoMapper(typeof(Startup));
 
             ////Configure CORS to allow any origin, header and method.
             //services.AddCors(options =>

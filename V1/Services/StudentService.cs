@@ -51,14 +51,12 @@ namespace StudentApp.V1.Services
             if (existingStudent == null)
                 return new StudentResponse("Student not found.");
 
-            existingStudent.Name = student.Name;
-
             try
             {
-                _studentRepository.Update(existingStudent);
+                _studentRepository.Update(student);
                 await _unitOfWork.SaveChangesAsync();
 
-                return new StudentResponse(existingStudent);
+                return new StudentResponse(student);
             }
             catch (Exception ex)
             {

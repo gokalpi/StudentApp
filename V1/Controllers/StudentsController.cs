@@ -1,8 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using StudentApp.Helpers.Extensions;
-using StudentApp.V1.Domain.Services;
 using StudentApp.V1.Domain.Models;
+using StudentApp.V1.Domain.Services;
+using StudentApp.V1.DTO.Request;
+using StudentApp.V1.DTO.Response;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -17,12 +20,14 @@ namespace StudentApp.V1.Controllers
     public class StudentsController : ControllerBase
     {
         private readonly IStudentService _service;
+        private readonly IMapper _mapper;
         private readonly ILogger<StudentsController> _logger;
 
-        public StudentsController(IStudentService service, ILogger<StudentsController> logger)
+        public StudentsController(IStudentService service, IMapper mapper, ILogger<StudentsController> logger)
         {
-            _service = service ?? throw new ArgumentNullException(nameof(service)); ;
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger)); ;
+            _service = service ?? throw new ArgumentNullException(nameof(service));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>
@@ -31,12 +36,14 @@ namespace StudentApp.V1.Controllers
         /// <returns>List of all students</returns>
         /// <response code="200">The successfully retrieved students.</response>
         [HttpGet]
-        [ProducesResponseType(typeof(IEnumerable<Student>), Status200OK)]
-        public async Task<IEnumerable<Student>> GetStudents()
+        [ProducesResponseType(typeof(ListQueryResultDto<StudentDto>), Status200OK)]
+        public async Task<ListQueryResultDto<StudentDto>> GetStudents()
         {
             _logger.LogInformation("Getting all students");
 
-            return await _service.ListAsync();
+            var students = await _service.ListAsync();
+            var dtos = _mapper.Map<IList<StudentDto>>(students);
+            return new ListQueryResultDto<StudentDto>(dtos);
         }
 
         /// <summary>
@@ -47,9 +54,9 @@ namespace StudentApp.V1.Controllers
         /// <response code="200">The student was successfully retrieved.</response>
         /// <response code="404">The student does not exits</response>
         [HttpGet("{id:int}")]
-        [ProducesResponseType(typeof(Student), Status200OK)]
-        [ProducesResponseType(Status404NotFound)]
-        public async Task<ActionResult<Student>> GetStudent(int id)
+        [ProducesResponseType(typeof(QueryResultDto<StudentDto>), Status200OK)]
+        [ProducesResponseType(typeof(QueryResultDto<StudentDto>), Status404NotFound)]
+        public async Task<ActionResult<QueryResultDto<StudentDto>>> GetStudent(int id)
         {
             _logger.LogInformation($"Getting student with id {id}");
 
@@ -57,11 +64,12 @@ namespace StudentApp.V1.Controllers
 
             if (student == null)
             {
-                _logger.LogError($"Student with id {id} does not exist");
-                return NotFound($"Student with id: {id} does not exist.");
+                _logger.LogError($"Student with id {id} not found.");
+                return NotFound(new QueryResultDto<StudentDto>($"Student with id {id} not found."));
             }
 
-            return student;
+            var studentDto = _mapper.Map<StudentDto>(student);
+            return Ok(new QueryResultDto<StudentDto>(studentDto));
         }
 
         /// <summary>
@@ -87,35 +95,38 @@ namespace StudentApp.V1.Controllers
         ///     }
         ///
         /// </remarks>
-        /// <param name="student">Student details</param>
+        /// <param name="dto">Student details</param>
         /// <returns>Created student</returns>
         /// <response code="200">Returns the created student</response>
         /// <response code="400">If model state is not valid or an error occured during operation</response>
         [HttpPost]
-        [ProducesResponseType(typeof(Student), Status200OK)]
-        [ProducesResponseType(Status400BadRequest)]
-        public async Task<ActionResult<Student>> CreateStudent(Student student)
+        [ProducesResponseType(typeof(QueryResultDto<StudentDto>), Status200OK)]
+        [ProducesResponseType(typeof(QueryResultDto<StudentDto>), Status400BadRequest)]
+        public async Task<ActionResult<QueryResultDto<StudentDto>>> CreateStudent([FromBody] SaveStudentDto dto)
         {
-            _logger.LogInformation($"Creating student {student}");
+            _logger.LogInformation($"Creating student {dto}");
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                var result = await _service.CreateAsync(student);
-                if (result.Success)
-                {
-                    _logger.LogInformation("Student successfully created.");
-                    return Ok(result.Resource);
-                }
-                else
-                {
-                    _logger.LogError("Error in creating student\r\n{0}", result.Message);
-                    return BadRequest(result.Message);
-                }
+                _logger.LogError("Model is not valid");
+                return BadRequest(new QueryResultDto<StudentDto>(ModelState.GetErrorMessages()));
+            }
+
+            var student = _mapper.Map<Student>(dto);
+            var result = await _service.CreateAsync(student);
+
+            if (result.Success)
+            {
+                _logger.LogInformation("Student successfully created.");
+
+                var studentDto = _mapper.Map<StudentDto>(result.Resource);
+                return Ok(new QueryResultDto<StudentDto>(studentDto));
             }
             else
             {
-                _logger.LogError("Model is not valid");
-                return BadRequest(ModelState.GetErrorMessages());
+                _logger.LogError("Error in creating student\r\n{0}", result.Message);
+
+                return BadRequest(new QueryResultDto<StudentDto>(result.Message));
             }
         }
 
@@ -143,35 +154,38 @@ namespace StudentApp.V1.Controllers
         ///
         /// </remarks>
         /// <param name="id">Student id</param>
-        /// <param name="student">Updated student details</param>
+        /// <param name="dto">Updated student details</param>
         /// <returns>Updated student</returns>
         /// <response code="200">Returns the updated student</response>
         /// <response code="400">If model state is not valid or an error occured during operation</response>
         [HttpPut("{id:int}")]
-        [ProducesResponseType(typeof(Student), Status200OK)]
-        [ProducesResponseType(Status400BadRequest)]
-        public async Task<ActionResult<Student>> UpdateStudent(int id, Student student)
+        [ProducesResponseType(typeof(QueryResultDto<StudentDto>), Status200OK)]
+        [ProducesResponseType(typeof(QueryResultDto<StudentDto>), Status400BadRequest)]
+        public async Task<ActionResult<QueryResultDto<StudentDto>>> UpdateStudent(int id, SaveStudentDto dto)
         {
-            _logger.LogInformation($"Updating student {student}");
+            _logger.LogInformation($"Updating student {dto}");
 
-            if (ModelState.IsValid)
-            {
-                var result = await _service.UpdateAsync(id, student);
-                if (result.Success)
-                {
-                    _logger.LogInformation("Student successfully updated.");
-                    return Ok(result.Resource);
-                }
-                else
-                {
-                    _logger.LogError("Error in updating student\r\n{0}", result.Message);
-                    return BadRequest(result.Message);
-                }
-            }
-            else
+            if (!ModelState.IsValid)
             {
                 _logger.LogError("Model is not valid");
                 return BadRequest(ModelState.GetErrorMessages());
+            }
+
+            var student = _mapper.Map<SaveStudentDto, Student>(dto);
+            student.Id = id;
+            var result = await _service.UpdateAsync(id, student);
+
+            if (result.Success)
+            {
+                _logger.LogInformation("Student successfully updated.");
+
+                var studentDto = _mapper.Map<StudentDto>(result.Resource);
+                return Ok(new QueryResultDto<StudentDto>(studentDto));
+            }
+            else
+            {
+                _logger.LogError("Error in updating student\r\n{0}", result.Message);
+                return BadRequest(new QueryResultDto<StudentDto>(result.Message));
             }
         }
 
@@ -183,9 +197,9 @@ namespace StudentApp.V1.Controllers
         /// <response code="200">Returns the deleted student</response>
         /// <response code="400">An error occured during operation</response>
         [HttpDelete("{id:int}")]
-        [ProducesResponseType(typeof(Student), Status200OK)]
-        [ProducesResponseType(Status400BadRequest)]
-        public async Task<ActionResult<Student>> DeleteStudent(int id)
+        [ProducesResponseType(typeof(QueryResultDto<StudentDto>), Status200OK)]
+        [ProducesResponseType(typeof(QueryResultDto<StudentDto>), Status400BadRequest)]
+        public async Task<ActionResult<QueryResultDto<StudentDto>>> DeleteStudent(int id)
         {
             _logger.LogInformation($"Deleting student with id {id}");
 
@@ -193,12 +207,14 @@ namespace StudentApp.V1.Controllers
             if (result.Success)
             {
                 _logger.LogInformation("Student successfully deleted.");
-                return Ok(result.Resource);
+
+                var studentDto = _mapper.Map<StudentDto>(result.Resource);
+                return Ok(new QueryResultDto<StudentDto>(studentDto));
             }
             else
             {
                 _logger.LogError("Error in deleting student\r\n{0}", result.Message);
-                return BadRequest(result.Message);
+                return BadRequest(new QueryResultDto<StudentDto>(result.Message));
             }
         }
     }
