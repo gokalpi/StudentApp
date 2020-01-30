@@ -1,0 +1,10 @@
+{
+	"home.applicationname": "Student Management System",
+	"home.welcome": "Welcome!",
+	"navbar.hellouser": "Hello",
+	"navbar.home": "Home",
+	"navbar.login": "Login",
+	"navbar.logout": "Logout",
+	"navbar.register": "Register",
+	"navbar.students": "Students"
+}

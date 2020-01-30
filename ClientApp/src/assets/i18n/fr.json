@@ -1,0 +1,10 @@
+{
+	"home.applicationname": "Système de gestion des étudiants",
+	"home.welcome": "Bienvenue!",
+	"navbar.hellouser": "Bonjour",
+	"navbar.home": "Accueil",
+	"navbar.login": "S'identifier",
+	"navbar.logout": "Connectez - Out",
+	"navbar.register": "Registre",
+	"navbar.students": "Étudiants"
+}

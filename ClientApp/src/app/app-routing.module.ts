@@ -8,12 +8,28 @@ import { StudentAddEditComponent } from "./students/student-add-edit/student-add
 import { HomeComponent } from "./home/home.component";
 
 const routes: Routes = [
-  { path: '', component: HomeComponent, pathMatch: 'full' },
-  { path: 'students', component: StudentListComponent, canActivate: [AuthorizeGuard] },
-  { path: 'students/add', component: StudentAddEditComponent, canActivate: [AuthorizeGuard] },
-  { path: 'students/:id', component: StudentDetailsComponent, canActivate: [AuthorizeGuard] },
-  { path: 'students/:id/edit', component: StudentAddEditComponent, canActivate: [AuthorizeGuard] },
-  { path: '**', redirectTo: '/' }
+  { path: "", component: HomeComponent, pathMatch: "full" },
+  {
+    path: "students",
+    component: StudentListComponent,
+    canActivate: [AuthorizeGuard]
+  },
+  {
+    path: "students/add",
+    component: StudentAddEditComponent,
+    canActivate: [AuthorizeGuard]
+  },
+  {
+    path: "students/:id",
+    component: StudentDetailsComponent,
+    canActivate: [AuthorizeGuard]
+  },
+  {
+    path: "students/:id/edit",
+    component: StudentAddEditComponent,
+    canActivate: [AuthorizeGuard]
+  },
+  { path: "**", redirectTo: "/" }
 ];
 
 @NgModule({

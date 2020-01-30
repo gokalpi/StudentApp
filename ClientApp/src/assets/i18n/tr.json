@@ -1,0 +1,10 @@
+{
+	"home.applicationname": "Öğrenci Yönetim Sistemi",
+	"home.welcome": "Hoşgeldiniz!",
+	"navbar.hellouser": "Merhaba",
+	"navbar.home": "Ana Sayfa",
+	"navbar.login": "Oturum aç",
+	"navbar.logout": "Çıkış Yap",
+	"navbar.register": "Kayıt Ol",
+	"navbar.students": "Öğrenciler"
+}

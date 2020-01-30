@@ -12,7 +12,7 @@ import { StudentService } from "src/app/services/student.service";
 export class StudentDetailsComponent implements OnInit {
   pageTitle = "Student Detail";
   errorMessage = "";
-  student: Student | undefined;
+  student: any;
 
   constructor(
     private studentService: StudentService,
@@ -34,7 +34,11 @@ export class StudentDetailsComponent implements OnInit {
   
   getStudent(id: number) {
     this.studentService.getStudent(id).subscribe(
-      response => (this.student = <Student>response.result),
+      response => {
+        console.log("getStudent Response", response);
+        // this.student = response.result;
+        // this.displayStudent(this.student);
+      },
       error => (this.errorMessage = <any>error)
     );
   }

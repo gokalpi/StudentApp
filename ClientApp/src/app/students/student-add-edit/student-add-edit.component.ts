@@ -1,5 +1,17 @@
-import { Component, OnInit, AfterViewInit, OnDestroy, ElementRef, ViewChildren } from "@angular/core";
-import { FormControlName, FormGroup, FormBuilder, Validators } from "@angular/forms";
+import {
+  Component,
+  OnInit,
+  AfterViewInit,
+  OnDestroy,
+  ElementRef,
+  ViewChildren
+} from "@angular/core";
+import {
+  FormControlName,
+  FormGroup,
+  FormBuilder,
+  Validators
+} from "@angular/forms";
 import { Subscription, Observable, fromEvent, merge } from "rxjs";
 import { Router, ActivatedRoute } from "@angular/router";
 import { ToastrService } from "ngx-toastr";
@@ -14,13 +26,14 @@ import { GenericValidator } from "src/app/shared/generic-validator";
   templateUrl: "./student-add-edit.component.html",
   styleUrls: ["./student-add-edit.component.css"]
 })
-export class StudentAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
+export class StudentAddEditComponent
+  implements OnInit, AfterViewInit, OnDestroy {
   bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
   @ViewChildren(FormControlName, { read: ElementRef })
   formInputElements: ElementRef[];
   pageTitle = "Student Edit";
   studentForm: FormGroup;
-  student: Student;
+  student: any;
   private sub: Subscription;
   errorMessage: string;
 
@@ -70,28 +83,16 @@ export class StudentAddEditComponent implements OnInit, AfterViewInit, OnDestroy
   ngOnInit() {
     this.studentForm = this.formBuilder.group({
       id: 0,
-      name: [
-        "",
-        Validators.required
-      ],
+      name: ["", Validators.required],
       email: [""],
       phone: [""],
       gender: ["", Validators.required],
       bloodGroup: ["", Validators.required],
       address: this.formBuilder.group({
-        street: [
-          "",
-          Validators.required
-        ],
-        city: [
-          "",
-          Validators.required
-        ],
+        street: ["", Validators.required],
+        city: ["", Validators.required],
         state: [""],
-        country: [
-          "",
-          Validators.required
-        ]
+        country: ["", Validators.required]
       })
     });
 
@@ -129,7 +130,9 @@ export class StudentAddEditComponent implements OnInit, AfterViewInit, OnDestroy
 
   ngAfterViewInit(): void {
     // Watch for the blur event from any input element on the form.
-    const controlBlurs: Observable<any>[] = this.formInputElements.map((formControl: ElementRef) =>
+    const controlBlurs: Observable<
+      any
+    >[] = this.formInputElements.map((formControl: ElementRef) =>
       fromEvent(formControl.nativeElement, "blur")
     );
 
@@ -146,14 +149,15 @@ export class StudentAddEditComponent implements OnInit, AfterViewInit, OnDestroy
   getStudent(id: number) {
     this.studentService.getStudent(id).subscribe(
       response => {
-        this.student = <Student>response.result;
-        this.displayStudent(this.student);
+        console.log("getStudent Response", response);
+        // this.student = response.result;
+        // this.displayStudent(this.student);
       },
       error => (this.errorMessage = <any>error)
     );
   }
 
-  displayStudent(student: Student): void {
+  displayStudent(student: any): void {
     if (this.studentForm) {
       this.studentForm.reset();
     }
