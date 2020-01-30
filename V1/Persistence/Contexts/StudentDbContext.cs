@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using StudentApp.V1.Models;
+using StudentApp.V1.Domain.Models;
 
 namespace StudentApp.V1.Persistence.Contexts
 {

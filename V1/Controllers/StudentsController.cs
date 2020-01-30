@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Logging;
 using StudentApp.Helpers.Extensions;
 using StudentApp.V1.Domain.Services;
-using StudentApp.V1.Models;
+using StudentApp.V1.Domain.Models;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;

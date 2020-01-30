@@ -1,7 +1,7 @@
 ﻿using StudentApp.V1.Domain.Repositories;
 using StudentApp.V1.Domain.Services;
 using StudentApp.V1.Domain.Services.Communication;
-using StudentApp.V1.Models;
+using StudentApp.V1.Domain.Models;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;

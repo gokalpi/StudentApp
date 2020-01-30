@@ -1,4 +1,4 @@
-﻿using StudentApp.V1.Models;
+﻿using StudentApp.V1.Domain.Models;
 
 namespace StudentApp.V1.Domain.Services.Communication
 {
