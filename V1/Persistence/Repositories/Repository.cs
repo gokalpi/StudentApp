@@ -1,11 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using StudentApp.Data;
+using StudentApp.V1.Domain.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
-namespace StudentApp.Data
+namespace StudentApp.V1.Persistence.Repositories
 {
     public class Repository<T> : IRepository<T> where T : class
     {

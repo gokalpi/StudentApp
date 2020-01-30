@@ -4,7 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
-namespace StudentApp.Data
+namespace StudentApp.V1.Domain.Repositories
 {
     public interface IRepository<T> where T : class
     {
