@@ -1,9 +1,9 @@
-﻿using AutoWrapper.Extensions;
-using AutoWrapper.Wrappers;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using StudentApp.V1.Domain.Repositories;
+using StudentApp.Helpers.Extensions;
+using StudentApp.V1.Domain.Services;
 using StudentApp.V1.Models;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using static Microsoft.AspNetCore.Http.StatusCodes;
@@ -16,15 +16,13 @@ namespace StudentApp.V1.Controllers
     [Route("api/v{version:apiVersion}/[controller]")]
     public class StudentsController : ControllerBase
     {
-        private readonly IRepository<Student> _repository;
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IStudentService _service;
         private readonly ILogger<StudentsController> _logger;
 
-        public StudentsController(IRepository<Student> repository, IUnitOfWork unitOfWork, ILogger<StudentsController> logger)
+        public StudentsController(IStudentService service, ILogger<StudentsController> logger)
         {
-            _repository = repository;
-            _unitOfWork = unitOfWork;
-            _logger = logger;
+            _service = service ?? throw new ArgumentNullException(nameof(service)); ;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger)); ;
         }
 
         /// <summary>
@@ -33,12 +31,12 @@ namespace StudentApp.V1.Controllers
         /// <returns>List of all students</returns>
         /// <response code="200">The successfully retrieved students.</response>
         [HttpGet]
-        [ProducesResponseType(typeof(IList<Student>), Status200OK)]
-        public async Task<IList<Student>> GetStudents()
+        [ProducesResponseType(typeof(IEnumerable<Student>), Status200OK)]
+        public async Task<IEnumerable<Student>> GetStudents()
         {
             _logger.LogInformation("Getting all students");
 
-            return await _repository.GetAllAsync();
+            return await _service.ListAsync();
         }
 
         /// <summary>
@@ -55,12 +53,12 @@ namespace StudentApp.V1.Controllers
         {
             _logger.LogInformation($"Getting student with id {id}");
 
-            var student = await _repository.GetByIdAsync(id);
+            var student = await _service.FindByIdAsync(id);
 
             if (student == null)
             {
                 _logger.LogError($"Student with id {id} does not exist");
-                throw new ApiException($"Student with id: {id} does not exist.", Status404NotFound);
+                return NotFound($"Student with id: {id} does not exist.");
             }
 
             return student;
@@ -90,38 +88,34 @@ namespace StudentApp.V1.Controllers
         ///
         /// </remarks>
         /// <param name="student">Student details</param>
-        /// <returns>Api response</returns>
-        /// <response code="201">Returns the created student</response>
-        /// <response code="400">If model state is not valid</response>
-        /// <response code="500">If exception occurs during delete</response>
+        /// <returns>Created student</returns>
+        /// <response code="200">Returns the created student</response>
+        /// <response code="400">If model state is not valid or an error occured during operation</response>
         [HttpPost]
-        [ProducesResponseType(typeof(ApiResponse), Status201Created)]
+        [ProducesResponseType(typeof(Student), Status200OK)]
         [ProducesResponseType(Status400BadRequest)]
-        [ProducesResponseType(Status500InternalServerError)]
-        public async Task<ApiResponse> CreateStudent(Student student)
+        public async Task<ActionResult<Student>> CreateStudent(Student student)
         {
             _logger.LogInformation($"Creating student {student}");
 
             if (ModelState.IsValid)
             {
-                try
+                var result = await _service.CreateAsync(student);
+                if (result.Success)
                 {
-                    _repository.Create(student);
-                    await _unitOfWork.SaveChangesAsync();
-
                     _logger.LogInformation("Student successfully created.");
-                    return new ApiResponse("Student successfully created.", student, Status201Created);
+                    return Ok(result.Resource);
                 }
-                catch (System.Exception e)
+                else
                 {
-                    _logger.LogError(e, "Error in creating student");
-                    throw new ApiException(e);
+                    _logger.LogError("Error in creating student\r\n{0}", result.Message);
+                    return BadRequest(result.Message);
                 }
             }
             else
             {
                 _logger.LogError("Model is not valid");
-                throw new ApiException(ModelState.AllErrors());
+                return BadRequest(ModelState.GetErrorMessages());
             }
         }
 
@@ -150,51 +144,34 @@ namespace StudentApp.V1.Controllers
         /// </remarks>
         /// <param name="id">Student id</param>
         /// <param name="student">Updated student details</param>
-        /// <returns>Api response</returns>
-        /// <response code="200">Returns true if successfully updated</response>
-        /// <response code="400">If model state is not valid</response>
-        /// <response code="404">The student does not exits</response>
-        /// <response code="500">If exception occurs during delete</response>
+        /// <returns>Updated student</returns>
+        /// <response code="200">Returns the updated student</response>
+        /// <response code="400">If model state is not valid or an error occured during operation</response>
         [HttpPut("{id:int}")]
-        [ProducesResponseType(typeof(ApiResponse), Status200OK)]
+        [ProducesResponseType(typeof(Student), Status200OK)]
         [ProducesResponseType(Status400BadRequest)]
-        [ProducesResponseType(Status404NotFound)]
-        [ProducesResponseType(Status500InternalServerError)]
-        public async Task<ApiResponse> UpdateStudent(int id, Student student)
+        public async Task<ActionResult<Student>> UpdateStudent(int id, Student student)
         {
             _logger.LogInformation($"Updating student {student}");
 
-            if (id != student.Id)
-            {
-                throw new ApiException($"Id {id} with entity id: {student.Id} does not match.", Status400BadRequest);
-            }
-
-            if (!await _repository.ExistsAsync(id))
-            {
-                _logger.LogError($"Student with id {id} does not exist");
-                throw new ApiException($"Student with Id: {id} does not exist.", Status404NotFound);
-            }
-
             if (ModelState.IsValid)
             {
-                try
+                var result = await _service.UpdateAsync(id, student);
+                if (result.Success)
                 {
-                    _repository.Update(student);
-                    await _unitOfWork.SaveChangesAsync();
-
-                    _logger.LogInformation($"Student with Id: {student.Id} successfully updated.");
-                    return new ApiResponse($"Student with Id: {student.Id} successfully updated.", true);
+                    _logger.LogInformation("Student successfully updated.");
+                    return Ok(result.Resource);
                 }
-                catch (System.Exception e)
+                else
                 {
-                    _logger.LogError(e, $"Error in deleting student with id {id}");
-                    throw new ApiException(e);
+                    _logger.LogError("Error in updating student\r\n{0}", result.Message);
+                    return BadRequest(result.Message);
                 }
             }
             else
             {
                 _logger.LogError("Model is not valid");
-                throw new ApiException(ModelState.AllErrors());
+                return BadRequest(ModelState.GetErrorMessages());
             }
         }
 
@@ -202,37 +179,26 @@ namespace StudentApp.V1.Controllers
         /// Deletes a specific student
         /// </summary>
         /// <param name="id">Student id</param>
-        /// <returns>Api response</returns>
-        /// <response code="200">Returns true if successfully deleted</response>
-        /// <response code="404">The student does not exits</response>
-        /// <response code="500">If exception occurs during delete</response>
-        [HttpDelete("{id:int}")]
-        [ProducesResponseType(typeof(ApiResponse), Status200OK)]
-        [ProducesResponseType(Status404NotFound)]
-        [ProducesResponseType(Status500InternalServerError)]
-        public async Task<ApiResponse> DeleteStudent(int id)
+        /// <returns>Deleted student</returns>
+        /// <response code="200">Returns the deleted student</response>
+        /// <response code="400">An error occured during operation</response>
+        [HttpPut("{id:int}")]
+        [ProducesResponseType(typeof(Student), Status200OK)]
+        [ProducesResponseType(Status400BadRequest)]
+        public async Task<ActionResult<Student>> DeleteStudent(int id)
         {
             _logger.LogInformation($"Deleting student with id {id}");
 
-            var student = await _repository.GetByIdAsync(id);
-            if (student == null)
+            var result = await _service.DeleteAsync(id);
+            if (result.Success)
             {
-                _logger.LogError($"Student with id {id} does not exist");
-                throw new ApiException($"Student with Id: {id} does not exist.", Status404NotFound);
+                _logger.LogInformation("Student successfully deleted.");
+                return Ok(result.Resource);
             }
-
-            try
+            else
             {
-                _repository.Delete(student);
-                await _unitOfWork.SaveChangesAsync();
-
-                _logger.LogInformation($"Student with id {id} successfully deleted");
-                return new ApiResponse($"Student with Id: {id} successfully deleted.", true);
-            }
-            catch (System.Exception e)
-            {
-                _logger.LogError(e, $"Error in deleting student with id {id}");
-                throw new ApiException(e);
+                _logger.LogError("Error in deleting student\r\n{0}", result.Message);
+                return BadRequest(result.Message);
             }
         }
     }

@@ -1,4 +1,3 @@
-using AutoWrapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
@@ -106,9 +105,6 @@ namespace StudentApp
 
             // Enable middleware to serve generated Swagger as a JSON endpoint.
             app.UseVersionedSwagger(provider);
-
-            //Enable AutoWrapper.Core
-            app.UseApiResponseAndExceptionWrapper(new AutoWrapperOptions { IsApiOnly = false });
 
             app.UseRouting();
 
