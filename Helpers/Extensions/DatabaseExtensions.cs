@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using StudentApp.V1.Persistence.Contexts;
@@ -9,22 +7,20 @@ namespace StudentApp.Helpers.Extensions
 {
     public static class DatabaseExtensions
     {
-        public static IServiceCollection AddDatabaseServices(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment env)
+        public static IServiceCollection AddDatabaseServices(this IServiceCollection services, string connectionString, string environmentName)
         {
-            // If application is running in development mode, then use in memory database
-            if (env.IsDevelopment())
+            services.AddDbContext<StudentDbContext>(options =>
             {
-                services.AddDbContext<StudentDbContext>(options =>
-                    options
-                    .UseInMemoryDatabase("StudentApp")
-                    .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking));
-            }
-            else
-            {
-                services.AddDbContext<StudentDbContext>(options =>
-                    options.UseSqlServer(
-                        configuration.GetConnectionString("DefaultConnection")));
-            }
+                // If application is running in development mode, then use in memory database
+                if (string.IsNullOrWhiteSpace(environmentName) || environmentName == Environments.Development)
+                {
+                    options.UseInMemoryDatabase("StudentApp").UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+                }
+                else
+                {
+                    options.UseSqlServer(connectionString);
+                }
+            });
 
             return services;
         }

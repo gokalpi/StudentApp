@@ -182,7 +182,7 @@ namespace StudentApp.V1.Controllers
         /// <returns>Deleted student</returns>
         /// <response code="200">Returns the deleted student</response>
         /// <response code="400">An error occured during operation</response>
-        [HttpPut("{id:int}")]
+        [HttpDelete("{id:int}")]
         [ProducesResponseType(typeof(Student), Status200OK)]
         [ProducesResponseType(Status400BadRequest)]
         public async Task<ActionResult<Student>> DeleteStudent(int id)

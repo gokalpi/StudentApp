@@ -7,7 +7,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using StudentApp.Helpers.Extensions;
 using StudentApp.V1.Domain.Repositories;
+using StudentApp.V1.Domain.Services;
 using StudentApp.V1.Persistence.Repositories;
+using StudentApp.V1.Services;
 
 namespace StudentApp
 {
@@ -44,11 +46,12 @@ namespace StudentApp
         /// <param name="services">The collection of services to configure the application with.</param>
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDatabaseServices(Configuration, _currentEnvironment);
+            services.AddControllersWithViews();
+
+            services.AddDatabaseServices(Configuration.GetConnectionString("DefaultConnection"), _currentEnvironment.EnvironmentName);
 
             services.AddIdentity();
 
-            services.AddControllersWithViews();
             services.AddRazorPages();
 
             // In production, the Angular files will be served from this directory
@@ -61,7 +64,9 @@ namespace StudentApp
 
             services.AddSwagger();
 
-            services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+            services.AddScoped<IStudentRepository, StudentRepository>();
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<IStudentService, StudentService>();
 
             ////Configure CORS to allow any origin, header and method.
             //services.AddCors(options =>
