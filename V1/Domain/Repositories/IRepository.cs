@@ -39,17 +39,13 @@ namespace StudentApp.V1.Domain.Repositories
 
         Task<int> CountAsync();
 
-        T Create(T entity);
+        void Create(T entity);
 
-        Task<T> CreateAsync(T entity);
+        Task CreateAsync(T entity);
 
-        T Update(T entity);
+        void Update(T entity);
 
-        Task<T> UpdateAsync(T entity);
-
-        bool Delete(T entity);
-
-        Task<bool> DeleteAsync(T entity);
+        void Delete(T entity);
 
         bool Exists(object id);
 

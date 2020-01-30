@@ -112,56 +112,29 @@ namespace StudentApp.V1.Persistence.Repositories
             return await _context.Set<T>().CountAsync();
         }
 
-        public T Create(T entity)
+        public void Create(T entity)
         {
             _context.Set<T>().Add(entity);
-            _context.SaveChanges();
-            return entity;
         }
 
-        public async Task<T> CreateAsync(T entity)
+        public async Task CreateAsync(T entity)
         {
-            _context.Set<T>().Add(entity);
-            await _context.SaveChangesAsync();
-            return entity;
+            await _context.Set<T>().AddAsync(entity);
         }
 
-        public T Update(T entity)
+        public void Update(T entity)
         {
             AttachEntity(entity);
 
             _context.Entry(entity).State = EntityState.Modified;
-            _context.SaveChanges();
-
-            return entity;
+            _context.Set<T>().Update(entity);
         }
 
-        public async Task<T> UpdateAsync(T entity)
-        {
-            AttachEntity(entity);
-
-            _context.Entry(entity).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
-
-            return entity;
-        }
-
-        public bool Delete(T entity)
+        public void Delete(T entity)
         {
             AttachEntity(entity);
 
             _context.Set<T>().Remove(entity);
-
-            return 1 == _context.SaveChanges();
-        }
-
-        public async Task<bool> DeleteAsync(T entity)
-        {
-            AttachEntity(entity);
-
-            _context.Set<T>().Remove(entity);
-
-            return 1 == await _context.SaveChangesAsync();
         }
 
         public bool Exists(object id)

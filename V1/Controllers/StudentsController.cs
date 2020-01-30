@@ -17,11 +17,13 @@ namespace StudentApp.V1.Controllers
     public class StudentsController : ControllerBase
     {
         private readonly IRepository<Student> _repository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<StudentsController> _logger;
 
-        public StudentsController(IRepository<Student> repository, ILogger<StudentsController> logger)
+        public StudentsController(IRepository<Student> repository, IUnitOfWork unitOfWork, ILogger<StudentsController> logger)
         {
             _repository = repository;
+            _unitOfWork = unitOfWork;
             _logger = logger;
         }
 
@@ -104,10 +106,11 @@ namespace StudentApp.V1.Controllers
             {
                 try
                 {
-                    var newStudent = await _repository.CreateAsync(student);
+                    _repository.Create(student);
+                    await _unitOfWork.SaveChangesAsync();
 
                     _logger.LogInformation("Student successfully created.");
-                    return new ApiResponse("Student successfully created.", newStudent, Status201Created);
+                    return new ApiResponse("Student successfully created.", student, Status201Created);
                 }
                 catch (System.Exception e)
                 {
@@ -176,7 +179,8 @@ namespace StudentApp.V1.Controllers
             {
                 try
                 {
-                    await _repository.UpdateAsync(student);
+                    _repository.Update(student);
+                    await _unitOfWork.SaveChangesAsync();
 
                     _logger.LogInformation($"Student with Id: {student.Id} successfully updated.");
                     return new ApiResponse($"Student with Id: {student.Id} successfully updated.", true);
@@ -219,7 +223,8 @@ namespace StudentApp.V1.Controllers
 
             try
             {
-                await _repository.DeleteAsync(student);
+                _repository.Delete(student);
+                await _unitOfWork.SaveChangesAsync();
 
                 _logger.LogInformation($"Student with id {id} successfully deleted");
                 return new ApiResponse($"Student with Id: {id} successfully deleted.", true);
