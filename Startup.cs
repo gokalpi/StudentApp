@@ -6,8 +6,9 @@ using Microsoft.AspNetCore.SpaServices.AngularCli;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using StudentApp.Data;
 using StudentApp.Helpers.Extensions;
+using StudentApp.V1.Domain.Repositories;
+using StudentApp.V1.Persistence.Repositories;
 
 namespace StudentApp
 {

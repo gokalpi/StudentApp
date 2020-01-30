@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using StudentApp.V1.Models;
 
-namespace StudentApp.Data
+namespace StudentApp.V1.Persistence.Contexts
 {
     public class StudentDbContext : ApiAuthorizationDbContext<ApplicationUser>
     {

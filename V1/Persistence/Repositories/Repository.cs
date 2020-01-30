@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using StudentApp.Data;
 using StudentApp.V1.Domain.Repositories;
+using StudentApp.V1.Persistence.Contexts;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using StudentApp.Data;
+using StudentApp.V1.Persistence.Contexts;
 
 namespace StudentApp.Helpers.Extensions
 {
